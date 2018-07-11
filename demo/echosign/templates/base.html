@@ -1,0 +1,11 @@
+{% load i18n %}
+<html>
+  <head>
+  <title>{% block head_title %}{% trans "django-echosign demo" %}{% endblock %}</title>
+  </head>
+  <body>
+    <p>{% block breadcrumb %}&gt; <a href="{% url 'home' %}">{% trans "django-echosign's demo" %}</a>{% endblock %}</p>
+    <h1>{% block title %}{% endblock %}</h1>
+    {% block content %}{% endblock %}
+  </body>
+</html>

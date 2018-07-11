@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block head_title %}{{ block.super }}{% endblock %}
+{% block title %}Welcome to django-echosign demo!{% endblock %}
+
+{% block content %}
+    {% if signature_type %}
+    <p>root url: {{ signature_type.root_url }}</p>
+    <p>application_id: {{ signature_type.application_id }}</p>
+    <p>application_secret : {{ signature_type.application_secret }}</p>
+    <p>access_token : {{ signature_type.access_token }}
+        <a href="{% url 'token' %}">Get token</a></p>
+
+    <a href="{% url 'update-settings' signature_type.pk %}">Change settings</a>
+    {% else %}
+    <a href="{% url 'create-settings' %}">Create settings</a>
+    {% endif %}
+
+    {% if signature_type.access_token %}
+        <p><a href="{% url 'signature' %}">Create signature</a></p>
+        <ul>
+            {% for signature in latest_signatures %}
+            <li>{{ signature.document_title }} {{ signature.signature_backend_id }}
+                <a href="{% url 'sign' signature.pk %}">
+                    Commit signature
+                </a>
+                <ul>
+                    {% for signer in signature.signers.all %}
+                    <li>Signer : {{ signer.full_name }} ({{ signer.email }})</li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+        <p> All agreements:</p>
+        {% if agreements_list_error %} <p>{{ agreements_list_error }}</p>{% endif %}
+        <ul>
+            {% for agreement in agreements %}
+            <li>{{ agreement }}</li>
+            {%endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
