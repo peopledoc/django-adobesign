@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 """Python packaging."""
 import os
-import sys
 
 from setuptools import setup, find_packages
 
-
 #: Absolute path to directory containing setup.py file.
 here = os.path.abspath(os.path.dirname(__file__))
-
 
 README = open(os.path.join(here, 'README.rst')).read()
 VERSION = open(os.path.join(here, 'VERSION')).read().strip()
@@ -19,8 +16,9 @@ REQUIREMENTS = [
     'django-anysign>=1.2',
     'requests',
     'requests_oauthlib',
+    'pytest-django',
+    'pytest-cov'
 ]
-
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
     setup(

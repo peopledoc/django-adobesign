@@ -35,7 +35,8 @@ class EchoSignBackend(django_anysign.SignatureBackend):
             jsonified_signers.append(signer)
         return jsonified_signers
 
-    def create_signature(self, signature, **extra_data):
+    def create_signature(self, signature, post_sign_redirect_url=None,
+                         post_sign_redirect_delay=0, **extra_data):
         """Register ``signature`` in EchoSign service, return updated object.
         This method calls ``save()`` on ``signature`` and ``signer``.
 
@@ -47,12 +48,14 @@ class EchoSignBackend(django_anysign.SignatureBackend):
             name=signature.document_title,
             participants=self.get_echosign_participants(signature),
             state=signature.state,
-            extra_data=extra_data)
+            post_sign_redirect_url=post_sign_redirect_url,
+            post_sign_redirect_delay=post_sign_redirect_delay,
+            **extra_data)
 
         # Update signature instance with record_id
         signature.signature_backend_id = result['id']
         signature.save()
-
+        # TODO why ?
         return signature
 
     def get_agreements(self, page_size=20, cursor=None, **extra_params):

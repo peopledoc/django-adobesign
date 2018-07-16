@@ -1,6 +1,6 @@
 from datetime import datetime
 from os import path
-from os.path import join
+from os.path import join, basename
 
 import requests
 from requests import HTTPError
@@ -61,7 +61,7 @@ class EchoSignClient(object):
     def upload_document(self, document):
         url = self.build_url(urlpath='transientDocuments')
         data = {
-            'File-Name': 'echosign-test-{}.pdf'.format(datetime.now()),
+            'File-Name': basename(document.file.name),
             'Mime-Type': 'application/pdf'
         }
         try:
@@ -84,9 +84,10 @@ class EchoSignClient(object):
             'role': 'SIGNER'
         }
 
-    def create_signature(self, document, name, participants, state='IN_PROCESS',
-                         post_sign_redirect_url=None,
-                         post_sign_redirect_delay=0,
+    def create_signature(self, document, name, participants,
+                         post_sign_redirect_url,
+                         post_sign_redirect_delay,
+                         state='IN_PROCESS',
                          **extra_data):
         '''
         Create signature with only one document
