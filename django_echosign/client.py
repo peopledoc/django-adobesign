@@ -1,4 +1,3 @@
-from datetime import datetime
 from os import path
 from os.path import join, basename
 
@@ -7,6 +6,8 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from django_echosign.exceptions import EchoSignException
+
+ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
 
 
 class EchoSignOAuthSession(object):
@@ -25,14 +26,14 @@ class EchoSignOAuthSession(object):
     @staticmethod
     def get_scopes(account_type):
         return [scope.format(account_type) for scope in (
-                    'user_login:{}',
-                    'agreement_send:{}',
-                    'agreement_read:{}',
-                    'agreement_write:{}')]
+            'user_login:{}',
+            'agreement_send:{}',
+            'agreement_read:{}',
+            'agreement_write:{}')]
 
     def create_token(self, code, application_secret):
         response = self.oauth_session.fetch_token(
-            'https://api.echosign.com/oauth/token',
+            ADOBE_OAUTH_TOKEN_URL,
             code=code,
             client_secret=application_secret,
             authorization_response='/')

@@ -77,8 +77,8 @@ def mock_request_create_signature(url, headers, files=None, data=None,
 
 
 @pytest.mark.django_db
-@patch('requests.post', Mock(side_effect=mock_request_create_signature))
-def test_create_signature():
+def test_create_signature(mocker):
+    mocker.patch('requests.post', mock_request_create_signature)
     signature = get_minimal_signature()
     signature.save()
 

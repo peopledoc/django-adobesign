@@ -17,7 +17,8 @@ REQUIREMENTS = [
     'requests',
     'requests_oauthlib',
     'pytest-django',
-    'pytest-cov'
+    'pytest-cov',
+    'pytest-mock'
 ]
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
