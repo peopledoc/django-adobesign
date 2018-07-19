@@ -14,3 +14,4 @@
 # Données générées
 /var/
 !/var/.empty
+/demo/db.sqlite3

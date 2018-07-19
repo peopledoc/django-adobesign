@@ -5,12 +5,11 @@ from django.views.generic.detail import SingleObjectMixin
 from echosign.models import Signer
 
 from django_echosign.backend import EchoSignBackend
-from django_echosign.client import EchoSignOAutClient, EchoSignClient
+from django_echosign.client import EchoSignClient, EchoSignOAuthSession
 from django_echosign.exceptions import EchoSignException
 from .models import Signature, SignatureType
 
-ECHOSIGN_SCOPES = ['user_login:self', 'agreement_send:self',
-                   'agreement_read:self', 'agreement_write:self']
+ECHOSIGN_ACCOUNT_TYPE = "self"
 
 
 def get_echosign_backend(signature_type, api_user=None, on_behalf_of_user=None):
@@ -61,14 +60,15 @@ class TokenView(RedirectView):
         code = self.request.GET.get('code')
         signature_type = SignatureType.objects.last()
         redirect_uri = self.request.build_absolute_uri(reverse('token'))
-        echosign_oauth_client = EchoSignOAutClient(
+        # TODO : signature has changed for EchoSignOAuthClient!
+        echosign_oauth_client = EchoSignOAuthSession(
             redirect_uri=redirect_uri,
-            root_url=signature_type.root_url,
             application_id=signature_type.application_id,
-            scope=ECHOSIGN_SCOPES)
+            account_type=ECHOSIGN_ACCOUNT_TYPE)
         # Redirect user to Echosign authorization
         if not code:
-            return echosign_oauth_client.get_authorization_url()
+            return echosign_oauth_client.get_authorization_url(
+                signature_type.root_url)
         # Create token
         token_response = echosign_oauth_client.create_token(
             code, signature_type.application_secret)
@@ -113,5 +113,13 @@ class Sign(SingleObjectMixin, RedirectView):
         signature = self.get_object()
         signature_type = signature.signature_type
         backend = get_echosign_backend(signature_type)
-        backend.create_signature(signature=signature)
+        backend.create_signature(
+            signature=signature,
+            post_sign_redirect_url="https://localhost:8000/next")
         return reverse('home')
+
+
+# TODO: finish this
+def redirect_from_signature(request):
+    from django.http import HttpResponse
+    return HttpResponse("Yay", content_type="text/plain")

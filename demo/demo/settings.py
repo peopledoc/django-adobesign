@@ -123,7 +123,7 @@ STATIC_URL = '/static/'
 
 
 ECHOSIGN_ROOT_URL = os.environ.get('ECHOSIGN_ROOT_URL',
-                                   'https://secure.echosign.com')
+                                   'https://secure.eu1.echosign.com')
 
 
 ANYSIGN = {

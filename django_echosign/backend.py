@@ -45,7 +45,7 @@ class EchoSignBackend(django_anysign.SignatureBackend):
 
         result = self.echosign_client.create_signature(
             document=document,
-            name=signature.document_title,
+            name=str(signature),
             participants=self.get_echosign_participants(signature),
             state=signature.state,
             post_sign_redirect_url=post_sign_redirect_url,

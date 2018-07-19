@@ -24,7 +24,7 @@ def authorize():
     authorization_url, state = session.authorization_url(
         authorization_base_url)
 
-    print ('Please go to %s and authorize access.'.format(authorization_url))
+    print('Please go to %s and authorize access.'.format(authorization_url))
 
 
 def fetch_token(code):
@@ -32,7 +32,7 @@ def fetch_token(code):
                                    code=code,
                                    client_secret=client_secret,
                                    authorization_response="/")
-    print (response)
+    print(response)
     return response['access_token']
 
 
@@ -42,7 +42,7 @@ def token_refresh(refresh_token):
                                      client_id=client_id,
                                      client_secret=client_secret,
                                      authorization_response="/")
-    print (response)
+    print(response)
     return response
 
 
@@ -57,7 +57,7 @@ def test(token, url="http://api.eu1.echosign.com/api/rest/v5/users"):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
 
-    print (response.json())
+    print(response.json())
 
 
 def upload_document(token, path):
@@ -76,7 +76,7 @@ def upload_document(token, path):
         response = requests.post(url, headers=headers, files=files, data=data)
     response.raise_for_status()
 
-    print (response.json())
+    print(response.json())
     return response.json()['transientDocumentId']
 
 
@@ -119,7 +119,7 @@ def send_doc_for_signature(token, doc_id):
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()
 
-    print (response.json())
+    print(response.json())
     return response.json()['agreementId']
 
 
@@ -132,7 +132,7 @@ def get_agreement(token, agreement_id):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
 
-    print (response.json())
+    print(response.json())
     return response.json()
 
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         sys.exit(0)
     if 'token' in sys.argv:
         token = fetch_token(code)
-        print (token)
+        print(token)
         sys.exit(0)
     if 'agreements' in sys.argv:
         get_agreements(token)

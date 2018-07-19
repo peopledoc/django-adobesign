@@ -21,8 +21,7 @@ help:
 #: develop - Install minimal development utilities.
 develop:
 	pip install tox
-	pip install -e .
-	pip install -e ./demo/
+	pip install -e . -e ./demo
 
 
 #: demo - Install demo project.

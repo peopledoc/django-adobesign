@@ -24,12 +24,14 @@ notice.
 
 """
 from django_echosign.backend import EchoSignBackend
-from django_echosign.exceptions import EchoSignException
 from django_echosign.client import EchoSignClient
+from django_echosign.client import EchoSignOAuthSession
+from django_echosign.exceptions import EchoSignException
 
 
 __all__ = [
     'EchoSignBackend',
+    'EchoSignClient',
     'EchoSignException',
-    'EchoSignClient'
+    'EchoSignOAuthSession',
 ]

@@ -9,23 +9,29 @@ from requests_oauthlib import OAuth2Session
 from django_echosign.exceptions import EchoSignException
 
 
-class EchoSignOAutClient(object):
-    def __init__(self, redirect_uri, root_url, application_id, scope):
-        self.redirect_uri = redirect_uri
-        self.root_url = root_url
+class EchoSignOAuthSession(object):
+    def __init__(self, application_id, redirect_uri, account_type, state=None):
+        self.oauth_session = OAuth2Session(
+            client_id=application_id,
+            redirect_uri=redirect_uri,
+            scope=self.get_scopes(account_type),
+            state=state)
 
-        # TODO refact, move in a builder or something else
-        self.session = OAuth2Session(application_id, redirect_uri=redirect_uri,
-                                     scope=scope)
-
-    def get_authorization_url(self):
-        url = join(self.root_url, 'public/oauth')
-        # TODO state ?
-        authorization_url, state = self.session.authorization_url(url)
+    def get_authorization_url(self, root_url):
+        url = join(root_url, 'public/oauth')
+        authorization_url, state = self.oauth_session.authorization_url(url)
         return authorization_url
 
+    @staticmethod
+    def get_scopes(account_type):
+        return [scope.format(account_type) for scope in (
+                    'user_login:{}',
+                    'agreement_send:{}',
+                    'agreement_read:{}',
+                    'agreement_write:{}')]
+
     def create_token(self, code, application_secret):
-        response = self.session.fetch_token(
+        response = self.oauth_session.fetch_token(
             'https://api.echosign.com/oauth/token',
             code=code,
             client_secret=application_secret,
@@ -85,10 +91,8 @@ class EchoSignClient(object):
         }
 
     def create_signature(self, document, name, participants,
-                         post_sign_redirect_url,
-                         post_sign_redirect_delay,
-                         state='IN_PROCESS',
-                         **extra_data):
+                         post_sign_redirect_url, post_sign_redirect_delay,
+                         state='IN_PROCESS', **extra_data):
         '''
         Create signature with only one document
 
@@ -160,18 +164,17 @@ class EchoSignClient(object):
             raise EchoSignException(message)
         return response.json()
 
-
-def get_agreements(self, page_size, cursor=None, **extra_params):
-    path_url = 'agreements'
-    params = {'pageSize': page_size}
-    if cursor:
-        params['cursor'] = cursor
-    params.update(extra_params)
-    url = self.build_url(path_url)
-    try:
-        response = requests.get(url, headers=self.get_headers(),
-                                params=params)
-        response.raise_for_status()
-    except(requests.exceptions.RequestException, HTTPError) as e:
-        raise EchoSignException(e)
-    return response.json()
+    def get_agreements(self, page_size, cursor=None, **extra_params):
+        path_url = 'agreements'
+        params = {'pageSize': page_size}
+        if cursor:
+            params['cursor'] = cursor
+        params.update(extra_params)
+        url = self.build_url(path_url)
+        try:
+            response = requests.get(url, headers=self.get_headers(),
+                                    params=params)
+            response.raise_for_status()
+        except(requests.exceptions.RequestException, HTTPError) as e:
+            raise EchoSignException(e)
+        return response.json()

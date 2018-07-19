@@ -39,7 +39,6 @@ class SignatureType(django_anysign.SignatureType):
             'token': self.access_token
         }
 
-
 class Signature(django_anysign.SignatureFactory(SignatureType)):
     document = models.FileField(
         _('document'),
@@ -63,6 +62,9 @@ class Signature(django_anysign.SignatureFactory(SignatureType)):
 
         """
         yield self.document
+
+    def __str__(self):
+        return self.document_title
 
 
 class Signer(django_anysign.SignerFactory(Signature)):
