@@ -55,7 +55,7 @@ maintainer-clean: distclean
 
 #: test - Run test suites.
 test:
-	pytest --cov=django_echosign -v
+	pytest --cov=django_echosign -vv
 
 #: test-all - Run test suites with tox.
 test-all:

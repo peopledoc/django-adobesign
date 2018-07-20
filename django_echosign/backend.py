@@ -27,7 +27,7 @@ class EchoSignBackend(django_anysign.SignatureBackend):
         jsonified_signers = []
         signers = signature.signers.all().order_by('signing_order')
         for position, signer in enumerate(signers, start=1):
-            signer = self.echosign_client.jsonify_participants(
+            signer = self.echosign_client.jsonify_participant(
                 name=signer.full_name,
                 email=signer.email,
                 order=position
@@ -43,8 +43,12 @@ class EchoSignBackend(django_anysign.SignatureBackend):
         """
         document = next(signature.signature_documents())
 
-        result = self.echosign_client.create_signature(
-            document=document,
+        # Upload document
+        response = self.echosign_client.upload_document(document)
+        transient_document_id = response.get('transientDocumentId')
+
+        result = self.echosign_client.post_agreement(
+            transient_document_id=transient_document_id,
             name=str(signature),
             participants=self.get_echosign_participants(signature),
             state=signature.state,

@@ -82,7 +82,7 @@ class EchoSignClient(object):
 
         return response.json()
 
-    def jsonify_participants(self, name, email, order):
+    def jsonify_participant(self, name, email, order):
         return {
             'name': name,
             'memberInfos': [
@@ -91,9 +91,9 @@ class EchoSignClient(object):
             'role': 'SIGNER'
         }
 
-    def create_signature(self, document, name, participants,
-                         post_sign_redirect_url, post_sign_redirect_delay,
-                         state='IN_PROCESS', **extra_data):
+    def post_agreement(self, transient_document_id, name, participants,
+                       post_sign_redirect_url, post_sign_redirect_delay,
+                       state='IN_PROCESS', **extra_data):
         '''
         Create signature with only one document
 
@@ -126,9 +126,6 @@ class EchoSignClient(object):
         limited to four per document,
         :param extra_data: extra data to pass (see echosign documentation)
         '''
-        # Upload document
-        response = self.upload_document(document)
-        transient_document_id = response.get('transientDocumentId')
 
         # Send doc for signature
         url = self.build_url(urlpath='agreements')
