@@ -113,7 +113,7 @@ class Sign(SingleObjectMixin, RedirectView):
         signature = self.get_object()
         signature_type = signature.signature_type
         backend = get_echosign_backend(signature_type)
-        backend.post_agreement(
+        backend.create_signature(
             signature=signature,
             post_sign_redirect_url="https://localhost:8000/next")
         return reverse('home')

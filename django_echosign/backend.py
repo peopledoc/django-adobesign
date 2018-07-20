@@ -69,4 +69,23 @@ class EchoSignBackend(django_anysign.SignatureBackend):
         return self.echosign_client.get_agreements(page_size, cursor,
                                                    **extra_params)
 
+    def get_next_signers(self, agreement_id):
+        """ Return the next signer list."""
+        members = self.echosign_client. \
+            get_members(agreement_id, include_next_participant_set=True)
+        return members.get('nextParticipantSets', [])
+
+    def get_next_signers_urls(self, argeement_id):
+        """
+            Return an array of urls for current signer set
+        """
+        return self.echosign_client.get_signing_url(argeement_id)
+
+    def get_all_signers(self, agreement_id):
+        """
+            Return the list of all signers info
+        """
+        return self.echosign_client.get_members(agreement_id,
+                                                include_next_participant_set=False)
+
 # LE DROit de créer un signature avec son token ?

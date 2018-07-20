@@ -176,3 +176,26 @@ class EchoSignClient(object):
         except(requests.exceptions.RequestException, HTTPError) as e:
             raise EchoSignException(e)
         return response.json()
+
+    def get_members(self, agreement_id, include_next_participant_set):
+        url = self.build_url('agreements/{}/members'.format(agreement_id))
+        try:
+            params = {'includeNextParticipantSet': include_next_participant_set}
+            response = requests.get(url,
+                                    params=params,
+                                    headers=self.get_headers())
+            response.raise_for_status()
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise EchoSignException(e)
+
+        return response.json()
+
+    def get_signing_url(self, agreement_id):
+        url = self.build_url('agreements/{}/signingUrls'.format(agreement_id))
+        try:
+            response = requests.get(url, headers=self.get_headers())
+            response.raise_for_status()
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise EchoSignException(e)
+
+        return response.json()

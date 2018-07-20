@@ -111,14 +111,22 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
                                    data=expected_data)
 
 
+@pytest.fixture()
+def response_with_error():
+    def __get_response(error_code):
+        response_with_client_error = Response()
+        response_with_client_error.status_code = error_code
+        return response_with_client_error
+
+    return __get_response
+
+
 @pytest.mark.parametrize('error_code', (404, 500))
-def test_document_upload_client_or_server_error(
-        error_code, mocker,
-        adobe_sign_client,
-        test_document):
-    response_with_client_error = Response()
-    response_with_client_error.status_code = error_code
-    mocker.patch('requests.post', return_value=response_with_client_error)
+def test_document_upload_client_or_server_error(error_code, mocker,
+                                                response_with_error,
+                                                adobe_sign_client,
+                                                test_document):
+    mocker.patch('requests.post', return_value=response_with_error(error_code))
     with pytest.raises(EchoSignException):
         adobe_sign_client.upload_document(test_document)
 
@@ -153,7 +161,6 @@ def test_should_create_signature(mocker, adobe_sign_client: EchoSignClient,
         'extra_param_dict': {'poney': 42},
         'extra_param_list': [1, 2, 3]
     }
-    # By default the assert call checks the last call
     mocked_post.assert_called_with('http://test/api/rest/v6/agreements',
                                    headers=expected_headers,
                                    json=expected_json)
@@ -161,14 +168,14 @@ def test_should_create_signature(mocker, adobe_sign_client: EchoSignClient,
 
 @pytest.mark.parametrize('error_code', (404, 500))
 def test_post_agreement_client_or_server_error(error_code, mocker,
+                                               response_with_error,
                                                adobe_sign_client):
-    response_with_client_error = Response()
-    response_with_client_error.status_code = error_code
     expected_json_reply_error = {'code': str(error_code),
                                  'message': 'error raison'}
-    mocker.patch.object(response_with_client_error, 'json',
+    response = response_with_error(error_code)
+    mocker.patch.object(response, 'json',
                         return_value=expected_json_reply_error)
-    mocker.patch('requests.post', return_value=response_with_client_error)
+    mocker.patch('requests.post', return_value=response)
     with pytest.raises(EchoSignException) as e:
         adobe_sign_client.post_agreement('doc id', 'name', [], '-', '-')
     assert expected_json_reply_error['code'] in str(e)
@@ -190,9 +197,48 @@ def test_get_agreements(mocker, adobe_sign_client, expected_headers):
 
 @pytest.mark.parametrize('error_code', (404, 500))
 def test_agreement_client_or_server_error(error_code, mocker,
+                                          response_with_error,
                                           adobe_sign_client):
-    response_with_client_error = Response()
-    response_with_client_error.status_code = error_code
-    mocker.patch('requests.get', return_value=response_with_client_error)
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
     with pytest.raises(EchoSignException):
         adobe_sign_client.get_agreements(11)
+
+
+@pytest.mark.parametrize('include_next_participant_set', (True, False))
+def test_get_members(include_next_participant_set, mocker, adobe_sign_client,
+                     expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_members('test_agreement_id',
+                                  include_next_participant_set)
+
+    mocked_get.assert_called_with(
+        'http://test/api/rest/v6/agreements/test_agreement_id/members',
+        params={'includeNextParticipantSet': include_next_participant_set},
+        headers=expected_headers)
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_members_client_or_server_error(error_code, mocker,
+                                            response_with_error,
+                                            adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(EchoSignException):
+        adobe_sign_client.get_members('id', True)
+
+
+def test_get_signing_url(mocker, adobe_sign_client, expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_signing_url('test_agreement_id')
+
+    mocked_get.assert_called_with(
+        'http://test/api/rest/v6/agreements/test_agreement_id/signingUrls',
+        headers=expected_headers)
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_signing_url_client_or_server_error(error_code, mocker,
+                                                response_with_error,
+                                                adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(EchoSignException):
+        adobe_sign_client.get_signing_url('id')
