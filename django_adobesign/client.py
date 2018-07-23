@@ -181,7 +181,8 @@ class AdobeSignClient(object):
     def get_members(self, agreement_id, include_next_participant_set):
         url = self.build_url('agreements/{}/members'.format(agreement_id))
         try:
-            params = {'includeNextParticipantSet': include_next_participant_set}
+            params = {
+                'includeNextParticipantSet': include_next_participant_set}
             response = requests.get(url,
                                     params=params,
                                     headers=self.get_headers())

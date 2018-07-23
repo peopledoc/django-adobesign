@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Python packaging."""
 import os
-import sys
 
 from setuptools import setup, find_packages
 

@@ -1,6 +1,6 @@
-###############
+################
 django-adobesign
-###############
+################
 
 `django-adobesign` is a Django application for Adobe AdobeSign's digital signature.
 

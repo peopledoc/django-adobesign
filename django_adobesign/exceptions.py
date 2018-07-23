@@ -25,7 +25,7 @@ class AdobeSignException(Exception):
 
 class AdobeSignNoMoreSignerException(AdobeSignException):
     CODE_REASON = ('AGREEMENT_EXPIRED', 'AGREEMENT_NOT_SIGNABLE',
-              'AGREEMENT_NOT_VISIBLE')
+                   'AGREEMENT_NOT_VISIBLE')
 
     def __init__(self, e, reason):
         if reason not in AdobeSignNoMoreSignerException.CODE_REASON:

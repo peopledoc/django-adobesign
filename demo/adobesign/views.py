@@ -12,7 +12,8 @@ from .models import Signature, SignatureType
 ADOBESIGN_ACCOUNT_TYPE = 'self'
 
 
-def get_adobesign_backend(signature_type, api_user=None, on_behalf_of_user=None):
+def get_adobesign_backend(signature_type, api_user=None,
+                          on_behalf_of_user=None):
     adobe_client = AdobeSignClient(root_url=signature_type.root_url,
                                    access_token=signature_type.access_token,
                                    api_user=api_user,
@@ -54,7 +55,8 @@ class HomeView(TemplateView):
                     else:
                         name = signer_data['memberInfos'][0]['name']
                     email = signer_data['memberInfos'][0]['email']
-                    url = next_signer_url if email == next_signer_mail else None
+                    url = next_signer_url \
+                        if email == next_signer_mail else None
                     signers.append({'name': name,
                                     'status': signer_data['status'],
                                     'order': signer_data['order'],

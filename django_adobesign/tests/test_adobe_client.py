@@ -106,10 +106,11 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
     expected_data = {
         'File-Name': 'test_document.pdf',
         'Mime-Type': 'application/pdf'}
-    mocked_post.assert_called_with('http://test/api/rest/v6/transientDocuments',
-                                   headers=expected_headers,
-                                   files={'File': test_document},
-                                   data=expected_data)
+    mocked_post.assert_called_with(
+        'http://test/api/rest/v6/transientDocuments',
+        headers=expected_headers,
+        files={'File': test_document},
+        data=expected_data)
 
 
 @pytest.fixture()

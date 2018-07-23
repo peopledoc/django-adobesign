@@ -39,6 +39,7 @@ class SignatureType(django_anysign.SignatureType):
             'token': self.access_token
         }
 
+
 class Signature(django_anysign.SignatureFactory(SignatureType)):
     document = models.FileField(
         _('document'),
@@ -51,7 +52,8 @@ class Signature(django_anysign.SignatureFactory(SignatureType)):
     state = models.CharField(
         _('AdobeSign state'),
         max_length=100,
-        help_text='https://secure.na1.adobesign.com/public/docs/restapi/v6#ParticipantSetInfopost_agreements',
+        help_text='https://secure.na1.adobesign.com/public/docs/restapi/v6#'
+                  'ParticipantSetInfopost_agreements',
         default='IN_PROCESS'
     )
 
