@@ -5,7 +5,8 @@ from requests import Response
 
 from django_echosign.client import EchoSignOAuthSession, \
     ADOBE_OAUTH_TOKEN_URL, EchoSignClient
-from django_echosign.exceptions import EchoSignException
+from django_echosign.exceptions import EchoSignException, \
+    AdobeSignNoMoreSignerException
 
 
 @pytest.fixture()
@@ -112,7 +113,7 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
 
 
 @pytest.fixture()
-def response_with_error():
+def response_with_error(mocker):
     def __get_response(error_code):
         response_with_client_error = Response()
         response_with_client_error.status_code = error_code
@@ -241,4 +242,27 @@ def test_get_signing_url_client_or_server_error(error_code, mocker,
                                                 adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(error_code))
     with pytest.raises(EchoSignException):
+        adobe_sign_client.get_signing_url('id')
+
+
+@pytest.mark.parametrize('code_reason', ('AGREEMENT_EXPIRED',
+                                         'AGREEMENT_NOT_SIGNABLE',
+                                         'AGREEMENT_NOT_VISIBLE'))
+def test_get_signing_url_client_not_real_not_found_error(code_reason, mocker,
+                                                         response_with_error,
+                                                         adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(404))
+    mocker.patch('requests.Response.json', return_value={'code': code_reason})
+    with pytest.raises(AdobeSignNoMoreSignerException):
+        adobe_sign_client.get_signing_url('id')
+
+
+def test_get_signing_url_client_not_found_error(mocker,
+                                                response_with_error,
+                                                adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(404))
+    mocker.patch('requests.Response.json',
+                 return_value={'code': 'REAL_NOT_FOUND'})
+    with pytest.raises(EchoSignException) as e:
+        assert not isinstance(e, AdobeSignNoMoreSignerException)
         adobe_sign_client.get_signing_url('id')

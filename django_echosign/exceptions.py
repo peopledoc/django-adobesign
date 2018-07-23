@@ -21,3 +21,14 @@ class EchoSignException(Exception):
                     self.args[0].response.body))
 
         return '\n'.join(message)
+
+
+class AdobeSignNoMoreSignerException(EchoSignException):
+    CODE_REASON = ('AGREEMENT_EXPIRED', 'AGREEMENT_NOT_SIGNABLE',
+              'AGREEMENT_NOT_VISIBLE')
+
+    def __init__(self, e, reason):
+        if reason not in AdobeSignNoMoreSignerException.CODE_REASON:
+            reason = 'Unexpected reason: {}'.format(reason)
+            self.reason = reason
+            super(AdobeSignNoMoreSignerException, self).__init__(e)

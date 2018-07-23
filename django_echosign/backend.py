@@ -1,4 +1,8 @@
+import logging
+
 from django_anysign import api as django_anysign
+
+from django_echosign.exceptions import AdobeSignNoMoreSignerException
 
 
 class EchoSignBackend(django_anysign.SignatureBackend):
@@ -75,17 +79,30 @@ class EchoSignBackend(django_anysign.SignatureBackend):
             get_members(agreement_id, include_next_participant_set=True)
         return members.get('nextParticipantSets', [])
 
-    def get_next_signers_urls(self, argeement_id):
+    def get_next_signer_urls(self, agreement_id):
         """
             Return an array of urls for current signer set
         """
-        return self.echosign_client.get_signing_url(argeement_id)
+        try:
+            return self.echosign_client.get_signing_url(agreement_id)
+        except AdobeSignNoMoreSignerException as e:
+            logging.warning(e)
+            return {'signingUrlSetInfos': []}
+
+    def get_next_signer_url(self, agreement_id):
+        """
+            Return the first next signer url and mail if exists
+        """
+        next_signers_url = self.get_next_signer_urls(agreement_id)
+        set_infos = next_signers_url['signingUrlSetInfos']
+        if set_infos and set_infos[0]['signingUrls']:
+            return set_infos[0]['signingUrls'][0]['email'], \
+                   set_infos[0]['signingUrls'][0]['esignUrl']
+        return None, None
 
     def get_all_signers(self, agreement_id):
         """
             Return the list of all signers info
         """
-        return self.echosign_client.get_members(agreement_id,
-                                                include_next_participant_set=False)
-
-# LE DROit de créer un signature avec son token ?
+        return self.echosign_client. \
+            get_members(agreement_id, include_next_participant_set=False)

@@ -5,6 +5,7 @@ from echosign.models import Signer, Signature, SignatureType
 
 from django_echosign.backend import EchoSignBackend
 from django_echosign.client import EchoSignClient
+from django_echosign.exceptions import AdobeSignNoMoreSignerException
 
 
 @pytest.fixture()
@@ -74,3 +75,24 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
 
     adobe_sign_backend.create_signature(minimal_signature)
     assert minimal_signature.signature_backend_id == 'test_agreement_id'
+
+
+def test_get_next_signer_urls(mocker, adobe_sign_backend):
+    mocker.patch.object(EchoSignClient, 'get_signing_url',
+                        side_effect=AdobeSignNoMoreSignerException('m', 'c'))
+    signers = adobe_sign_backend.get_next_signer_urls('12')
+    assert signers == {'signingUrlSetInfos': []}
+
+
+def test_get_next_signer_url(mocker, adobe_sign_backend):
+    data = {'signingUrlSetInfos': [{
+        'signingUrls': [{
+            'email': 'pouet@truc.com',
+            'esignUrl': 'url'},
+            {'other': 'potential signer'}
+        ]}
+    ]}
+    mocker.patch.object(EchoSignClient, 'get_signing_url',
+                        return_value=data)
+    mail, url = adobe_sign_backend.get_next_signer_url('12')
+    assert (mail, url) == ('pouet@truc.com', 'url')

@@ -5,7 +5,8 @@ import requests
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
-from django_echosign.exceptions import EchoSignException
+from django_echosign.exceptions import EchoSignException, \
+    AdobeSignNoMoreSignerException
 
 ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
 
@@ -195,7 +196,17 @@ class EchoSignClient(object):
         try:
             response = requests.get(url, headers=self.get_headers())
             response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
+        except HTTPError as e:
+            try:
+                json_data = e.response.json()
+            except Exception:
+                raise EchoSignException(e)
+            error_reason = json_data.get('code')
+            if e.response.status_code == 404 and \
+                    error_reason in AdobeSignNoMoreSignerException.CODE_REASON:
+                message = '{} {}'.format(e, json_data.get('message'))
+                raise AdobeSignNoMoreSignerException(message, error_reason)
             raise EchoSignException(e)
-
+        except requests.exceptions.RequestException as e:
+            raise EchoSignException(e)
         return response.json()
