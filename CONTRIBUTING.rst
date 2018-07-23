@@ -3,14 +3,14 @@ Contributing
 ############
 
 This document provides guidelines for people who want to contribute to the
-`django-echosign` project.
+`django-adobesign` project.
 
 
 **************
 Create tickets
 **************
 
-Please use django-echosign bugtracker **before** starting some work:
+Please use django-adobesign bugtracker **before** starting some work:
 
 * check if the bug or feature request has already been filed. It may have been
   answered too!
@@ -42,12 +42,12 @@ Use topic branches
 Fork, clone
 ***********
 
-Clone `django-echosign` repository (adapt to use your own fork):
+Clone `django-adobesign` repository (adapt to use your own fork):
 
 .. code:: sh
 
-   git clone git@github.com:novapost/django-echosign.git
-   cd django-echosign/
+   git clone git@github.com:novapost/django-adobesign.git
+   cd django-adobesign/
 
 
 *************
@@ -64,7 +64,7 @@ environment:
 * Build documentation: ``make documentation``. It builds `Sphinx`_
   documentation in `var/docs/html/index.html`.
 
-* Release `django-echosign` project with `zest.releaser`_: ``make release``.
+* Release `django-adobesign` project with `zest.releaser`_: ``make release``.
 
 * Cleanup local repository: ``make clean``, ``make distclean`` and
   ``make maintainer-clean``.

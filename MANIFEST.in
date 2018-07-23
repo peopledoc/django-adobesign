@@ -1,4 +1,4 @@
-recursive-include django_echosign *
+recursive-include django_adobesign *
 global-exclude *.pyc
 include AUTHORS
 include CHANGELOG

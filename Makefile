@@ -1,7 +1,7 @@
 # Reference card for usual actions in development environment.
 #
-# For standard installation of django-echosign, see INSTALL.
-# For details about django-echosign's development environment, see CONTRIBUTING.rst.
+# For standard installation of django-adobesign, see INSTALL.
+# For details about django-adobesign's development environment, see CONTRIBUTING.rst.
 #
 PIP = pip
 TOX = tox
@@ -26,7 +26,7 @@ develop:
 
 #: demo - Install demo project.
 demo: develop
-	python demo/manage.py migrate echosign
+	python demo/manage.py migrate adobesign
 
 
 #: serve - Run development server for demo project.
@@ -55,7 +55,7 @@ maintainer-clean: distclean
 
 #: test - Run test suites.
 test:
-	pytest --cov=django_echosign -vv
+	pytest --cov=django_adobesign -vv
 
 #: test-all - Run test suites with tox.
 test-all:
@@ -63,7 +63,7 @@ test-all:
 
 #: lint - Run lint test.
 lint:
-	flake8 --exclude=migrations django_echosign demo
+	flake8 --exclude=migrations django_adobesign demo
 
 #: documentation - Build documentation (Sphinx, README, ...)
 documentation: sphinx readme

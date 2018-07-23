@@ -7,26 +7,26 @@ from django_anysign import api as django_anysign
 
 class SignatureType(django_anysign.SignatureType):
     root_url = models.CharField(
-        _('Echosign root url'),
+        _('AdobeSign root url'),
         max_length=255,
-        default=settings.ECHOSIGN_ROOT_URL)
+        default=settings.ADOBESIGN_ROOT_URL)
 
     application_id = models.CharField(
-        _('Echosign application id'),
+        _('AdobeSign application id'),
         max_length=100,
         help_text='https://www.adobe.io/apis/documentcloud/sign/docs/overview.'
                   'html',
         default='')
 
     application_secret = models.CharField(
-        _('Echosign application secret'),
+        _('AdobeSign application secret'),
         max_length=100,
         help_text='https://www.adobe.io/apis/documentcloud/sign/docs/overview.'
                   'html',
         default='')
 
     access_token = models.CharField(
-        _('Echosign token'),
+        _('AdobeSign token'),
         max_length=100,
         help_text='https://www.adobe.io/apis/documentcloud/sign/docs/overview.'
                   'html',
@@ -49,9 +49,9 @@ class Signature(django_anysign.SignatureFactory(SignatureType)):
         max_length=100,
     )
     state = models.CharField(
-        _('Echosign state'),
+        _('AdobeSign state'),
         max_length=100,
-        help_text='https://secure.na1.echosign.com/public/docs/restapi/v6#ParticipantSetInfopost_agreements',
+        help_text='https://secure.na1.adobesign.com/public/docs/restapi/v6#ParticipantSetInfopost_agreements',
         default='IN_PROCESS'
     )
 

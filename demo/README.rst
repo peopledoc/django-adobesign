@@ -1,8 +1,8 @@
 ###############
-django-echosign
+django-adobesign
 ###############
 
-`django-echosign` is a Django application for Adobe EchoSign's digital signature.
+`django-adobesign` is a Django application for Adobe EchoSign's digital signature.
 
 It implements `django-anysign`_ API.
 

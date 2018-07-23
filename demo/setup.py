@@ -26,10 +26,10 @@ REQUIREMENTS = [
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
     setup(
-        name='django-echosign-demo',
+        name='django-adobesign-demo',
         version=VERSION,
-        description='Django application to manage online signature with '
-                    'EchoSign.',
+        description='Django application demo to manage online signature with '
+                    'AdobeSign.',
         long_description=README,
         classifiers=[
             "Operating System :: POSIX",
@@ -41,10 +41,10 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.6",
         ],
-        keywords='peopledoc anysign echosign',
+        keywords='peopledoc anysign adobesign',
         author='Peopledoc',
         author_email='david.steinberger@people-doc.com',
-        url='http://github.com/peopledoc/django-echosign',
+        url='http://github.com/peopledoc/django-adobesign',
         packages=find_packages(),
         include_package_data=True,
         zip_safe=False,

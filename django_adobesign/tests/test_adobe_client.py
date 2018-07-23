@@ -3,17 +3,17 @@ from django.core.files import File
 from django.db.models import FileField
 from requests import Response
 
-from django_echosign.client import EchoSignOAuthSession, \
-    ADOBE_OAUTH_TOKEN_URL, EchoSignClient
-from django_echosign.exceptions import EchoSignException, \
+from django_adobesign.client import AdobeSignOAuthSession, \
+    ADOBE_OAUTH_TOKEN_URL, AdobeSignClient
+from django_adobesign.exceptions import AdobeSignException, \
     AdobeSignNoMoreSignerException
 
 
 @pytest.fixture()
 def adobe_oauth_session():
-    return EchoSignOAuthSession(application_id='na',
-                                redirect_uri='na',
-                                account_type='na')
+    return AdobeSignOAuthSession(application_id='na',
+                                 redirect_uri='na',
+                                 account_type='na')
 
 
 def test_oauth_get_authorization_url(adobe_oauth_session):
@@ -25,7 +25,7 @@ def test_oauth_get_authorization_url(adobe_oauth_session):
 
 
 def test_oauth_get_scopes():
-    scopes = EchoSignOAuthSession.get_scopes(account_type='account')
+    scopes = AdobeSignOAuthSession.get_scopes(account_type='account')
 
     assert 'user_login:account' in scopes
     assert 'agreement_send:account' in scopes
@@ -45,10 +45,10 @@ def test_oauth_create(mocker, adobe_oauth_session):
 
 @pytest.fixture()
 def adobe_sign_client():
-    return EchoSignClient(root_url='http://test',
-                          access_token='TestToken',
-                          api_user='test_api_user',
-                          on_behalf_of_user='test_on_behalf_user')
+    return AdobeSignClient(root_url='http://test',
+                           access_token='TestToken',
+                           api_user='test_api_user',
+                           on_behalf_of_user='test_on_behalf_user')
 
 
 @pytest.fixture()
@@ -128,11 +128,11 @@ def test_document_upload_client_or_server_error(error_code, mocker,
                                                 adobe_sign_client,
                                                 test_document):
     mocker.patch('requests.post', return_value=response_with_error(error_code))
-    with pytest.raises(EchoSignException):
+    with pytest.raises(AdobeSignException):
         adobe_sign_client.upload_document(test_document)
 
 
-def test_should_create_signature(mocker, adobe_sign_client: EchoSignClient,
+def test_should_create_signature(mocker, adobe_sign_client: AdobeSignClient,
                                  expected_participant, expected_headers):
     mocked_post = mocker.patch('requests.post')
     participants = [expected_participant]
@@ -177,7 +177,7 @@ def test_post_agreement_client_or_server_error(error_code, mocker,
     mocker.patch.object(response, 'json',
                         return_value=expected_json_reply_error)
     mocker.patch('requests.post', return_value=response)
-    with pytest.raises(EchoSignException) as e:
+    with pytest.raises(AdobeSignException) as e:
         adobe_sign_client.post_agreement('doc id', 'name', [], '-', '-')
     assert expected_json_reply_error['code'] in str(e)
     assert expected_json_reply_error['message'] in str(e)
@@ -201,7 +201,7 @@ def test_agreement_client_or_server_error(error_code, mocker,
                                           response_with_error,
                                           adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(error_code))
-    with pytest.raises(EchoSignException):
+    with pytest.raises(AdobeSignException):
         adobe_sign_client.get_agreements(11)
 
 
@@ -223,7 +223,7 @@ def test_get_members_client_or_server_error(error_code, mocker,
                                             response_with_error,
                                             adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(error_code))
-    with pytest.raises(EchoSignException):
+    with pytest.raises(AdobeSignException):
         adobe_sign_client.get_members('id', True)
 
 
@@ -241,7 +241,7 @@ def test_get_signing_url_client_or_server_error(error_code, mocker,
                                                 response_with_error,
                                                 adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(error_code))
-    with pytest.raises(EchoSignException):
+    with pytest.raises(AdobeSignException):
         adobe_sign_client.get_signing_url('id')
 
 
@@ -263,6 +263,6 @@ def test_get_signing_url_client_not_found_error(mocker,
     mocker.patch('requests.get', return_value=response_with_error(404))
     mocker.patch('requests.Response.json',
                  return_value={'code': 'REAL_NOT_FOUND'})
-    with pytest.raises(EchoSignException) as e:
+    with pytest.raises(AdobeSignException) as e:
         assert not isinstance(e, AdobeSignNoMoreSignerException)
         adobe_sign_client.get_signing_url('id')

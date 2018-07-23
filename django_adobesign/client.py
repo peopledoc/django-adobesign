@@ -5,13 +5,13 @@ import requests
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
-from django_echosign.exceptions import EchoSignException, \
+from django_adobesign.exceptions import AdobeSignException, \
     AdobeSignNoMoreSignerException
 
 ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
 
 
-class EchoSignOAuthSession(object):
+class AdobeSignOAuthSession(object):
     def __init__(self, application_id, redirect_uri, account_type, state=None):
         self.oauth_session = OAuth2Session(
             client_id=application_id,
@@ -42,9 +42,9 @@ class EchoSignOAuthSession(object):
         return response
 
 
-class EchoSignClient(object):
+class AdobeSignClient(object):
     '''
-    Echosign client use v6 api.
+    AdobeSign client use v6 api.
     See https://secure.na1.echosign.com/public/docs/restapi/v6
     '''
 
@@ -79,7 +79,7 @@ class EchoSignClient(object):
                                      data=data)
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:
-            raise EchoSignException(e)
+            raise AdobeSignException(e)
 
         return response.json()
 
@@ -98,7 +98,7 @@ class EchoSignClient(object):
         '''
         Create signature with only one document
 
-        https://secure.na1.echosign.com/public/docs/restapi/v6#!/agreements/createAgreement
+        https://secure.na1.adobesign.com/public/docs/restapi/v6#!/agreements/createAgreement
 
         This is a primary endpoint which is used to create a new agreement.
         An agreement can be created using transientDocument, libraryDocument
@@ -125,7 +125,7 @@ class EchoSignClient(object):
         For regular (non-MegaSign) documents, there is no limit on the number
         of electronic signatures in a single document. Written signatures are
         limited to four per document,
-        :param extra_data: extra data to pass (see echosign documentation)
+        :param extra_data: extra data to pass (see adobesign documentation)
         '''
 
         # Send doc for signature
@@ -160,7 +160,7 @@ class EchoSignClient(object):
                                             json_data['message'])
             except Exception:
                 message = e
-            raise EchoSignException(message)
+            raise AdobeSignException(message)
         return response.json()
 
     def get_agreements(self, page_size, cursor=None, **extra_params):
@@ -175,7 +175,7 @@ class EchoSignClient(object):
                                     params=params)
             response.raise_for_status()
         except(requests.exceptions.RequestException, HTTPError) as e:
-            raise EchoSignException(e)
+            raise AdobeSignException(e)
         return response.json()
 
     def get_members(self, agreement_id, include_next_participant_set):
@@ -187,7 +187,7 @@ class EchoSignClient(object):
                                     headers=self.get_headers())
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:
-            raise EchoSignException(e)
+            raise AdobeSignException(e)
 
         return response.json()
 
@@ -200,13 +200,13 @@ class EchoSignClient(object):
             try:
                 json_data = e.response.json()
             except Exception:
-                raise EchoSignException(e)
+                raise AdobeSignException(e)
             error_reason = json_data.get('code')
             if e.response.status_code == 404 and \
                     error_reason in AdobeSignNoMoreSignerException.CODE_REASON:
                 message = '{} {}'.format(e, json_data.get('message'))
                 raise AdobeSignNoMoreSignerException(message, error_reason)
-            raise EchoSignException(e)
+            raise AdobeSignException(e)
         except requests.exceptions.RequestException as e:
-            raise EchoSignException(e)
+            raise AdobeSignException(e)
         return response.json()

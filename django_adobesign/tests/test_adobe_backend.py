@@ -1,18 +1,18 @@
 import pytest
 from django.core.files import File
 from django.db.models import FileField
-from echosign.models import Signer, Signature, SignatureType
+from adobesign.models import Signer, Signature, SignatureType
 
-from django_echosign.backend import EchoSignBackend
-from django_echosign.client import EchoSignClient
-from django_echosign.exceptions import AdobeSignNoMoreSignerException
+from django_adobesign.backend import AdobeSignBackend
+from django_adobesign.client import AdobeSignClient
+from django_adobesign.exceptions import AdobeSignNoMoreSignerException
 
 
 @pytest.fixture()
 def adobe_sign_backend():
-    adobe_sign_client = EchoSignClient(root_url='http://fake',
-                                       access_token='ThisIsAToken')
-    return EchoSignBackend(adobe_sign_client)
+    adobe_sign_client = AdobeSignClient(root_url='http://fake',
+                                        access_token='ThisIsAToken')
+    return AdobeSignBackend(adobe_sign_client)
 
 
 @pytest.fixture()
@@ -29,8 +29,8 @@ def minimal_signature(mocker):
 
 
 @pytest.mark.django_db
-def test_get_echosign_participants_in_right_order(minimal_signature,
-                                                  adobe_sign_backend):
+def test_get_adobesign_participants_in_right_order(minimal_signature,
+                                                   adobe_sign_backend):
     signer1 = Signer(full_name='Poney poney', email='poney@plop.com',
                      signing_order=1)
     signer2 = Signer(full_name='Pouet pouet', email='pouet@plop.com',
@@ -41,7 +41,7 @@ def test_get_echosign_participants_in_right_order(minimal_signature,
 
     signer2.save()
     signer1.save()
-    adobe_sign_signers = adobe_sign_backend.get_echosign_participants(
+    adobe_sign_signers = adobe_sign_backend.get_adobesign_participants(
         minimal_signature)
 
     assert len(adobe_sign_signers) == 2
@@ -66,9 +66,9 @@ def test_get_echosign_participants_in_right_order(minimal_signature,
 
 @pytest.mark.django_db
 def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
-    mocker.patch.object(EchoSignClient, 'upload_document',
+    mocker.patch.object(AdobeSignClient, 'upload_document',
                         return_value={'transientDocumentId': 'doc_id'})
-    mocker.patch.object(EchoSignClient, 'post_agreement',
+    mocker.patch.object(AdobeSignClient, 'post_agreement',
                         return_value={'id': 'test_agreement_id'})
 
     assert minimal_signature.signature_backend_id == u''
@@ -78,7 +78,7 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
 
 
 def test_get_next_signer_urls(mocker, adobe_sign_backend):
-    mocker.patch.object(EchoSignClient, 'get_signing_url',
+    mocker.patch.object(AdobeSignClient, 'get_signing_url',
                         side_effect=AdobeSignNoMoreSignerException('m', 'c'))
     signers = adobe_sign_backend.get_next_signer_urls('12')
     assert signers == {'signingUrlSetInfos': []}
@@ -92,7 +92,7 @@ def test_get_next_signer_url(mocker, adobe_sign_backend):
             {'other': 'potential signer'}
         ]}
     ]}
-    mocker.patch.object(EchoSignClient, 'get_signing_url',
+    mocker.patch.object(AdobeSignClient, 'get_signing_url',
                         return_value=data)
     mail, url = adobe_sign_backend.get_next_signer_url('12')
     assert (mail, url) == ('pouet@truc.com', 'url')

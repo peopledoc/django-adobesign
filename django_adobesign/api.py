@@ -23,15 +23,15 @@ part of the deprecation policy. They can be moved, changed, removed without
 notice.
 
 """
-from django_echosign.backend import EchoSignBackend
-from django_echosign.client import EchoSignClient
-from django_echosign.client import EchoSignOAuthSession
-from django_echosign.exceptions import EchoSignException
+from django_adobesign.backend import AdobeSignBackend
+from django_adobesign.client import AdobeSignClient
+from django_adobesign.client import AdobeSignOAuthSession
+from django_adobesign.exceptions import AdobeSignException
 
 
 __all__ = [
-    'EchoSignBackend',
-    'EchoSignClient',
-    'EchoSignException',
-    'EchoSignOAuthSession',
+    'AdobeSignBackend',
+    'AdobeSignClient',
+    'AdobeSignException',
+    'AdobeSignOAuthSession',
 ]

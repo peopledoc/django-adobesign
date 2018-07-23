@@ -17,5 +17,5 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('', include('echosign.urls')),
+    path('', include('adobesign.urls')),
 ]

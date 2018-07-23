@@ -4,26 +4,26 @@ from django.utils import six
 from requests.exceptions import RequestException
 
 
-class EchoSignException(Exception):
-    """An error occurred with EchoSign wrapper API."""
+class AdobeSignException(Exception):
+    """An error occurred with AdobeSign wrapper API."""
 
     def __str__(self):
         message = [repr(self)]
         if six.PY2:
             if isinstance(self.message, RequestException) \
                     and self.message.response:
-                message.append('EchoSign wrapper response: {}'.format(
+                message.append('AdobeSign wrapper response: {}'.format(
                     self.message.response.body))
         else:
             if isinstance(self.args[0], RequestException) \
                     and self.args[0].response:
-                message.append('EchoSign wrapper response: {}'.format(
+                message.append('AdobeSign wrapper response: {}'.format(
                     self.args[0].response.body))
 
         return '\n'.join(message)
 
 
-class AdobeSignNoMoreSignerException(EchoSignException):
+class AdobeSignNoMoreSignerException(AdobeSignException):
     CODE_REASON = ('AGREEMENT_EXPIRED', 'AGREEMENT_NOT_SIGNABLE',
               'AGREEMENT_NOT_VISIBLE')
 

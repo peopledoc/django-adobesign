@@ -9,7 +9,7 @@ from requests_oauthlib import OAuth2Session
 
 client_id = "XXXXXXXXXXXXXXXXXXX"
 client_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXX"
-authorization_base_url = 'https://secure.eu1.echosign.com/public/oauth'
+authorization_base_url = 'https://secure.eu1.adobesign.com/public/oauth'
 token_url = 'https://api.echosign.com/oauth/token'
 refresh_url = 'https://api.echosign.com/oauth/refresh'
 redirect_uri = "https://localhost:8000"
@@ -47,10 +47,10 @@ def token_refresh(refresh_token):
 
 
 def build_url(path):
-    return "https://api.eu1.echosign.com/api/rest/v5{}".format(path)
+    return "https://api.eu1.adobesign.com/api/rest/v5{}".format(path)
 
 
-def test(token, url="http://api.eu1.echosign.com/api/rest/v5/users"):
+def test(token, url="http://api.eu1.adobesign.com/api/rest/v5/users"):
     # Test endpoint
     headers = {"Authorization": "Bearer {}".format(token)}
 
@@ -69,7 +69,7 @@ def upload_document(token, path):
     with open(path, 'rb') as pdf:
         files = {'File': pdf}
         data = {
-            'File-Name': 'echosign-test-{}.pdf'.format(datetime.now()),
+            'File-Name': 'adobesign-test-{}.pdf'.format(datetime.now()),
             'Mime-Type': 'application/pdf'
         }
 
