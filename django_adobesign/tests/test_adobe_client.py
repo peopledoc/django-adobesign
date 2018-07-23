@@ -132,7 +132,7 @@ def test_document_upload_client_or_server_error(error_code, mocker,
         adobe_sign_client.upload_document(test_document)
 
 
-def test_should_create_signature(mocker, adobe_sign_client: AdobeSignClient,
+def test_should_create_signature(mocker, adobe_sign_client,
                                  expected_participant, expected_headers):
     mocked_post = mocker.patch('requests.post')
     participants = [expected_participant]
