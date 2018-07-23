@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: python:3.6
+
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            pip install tox
+
+      - run:
+          name: run tests
+          command: |
+            make test-all
