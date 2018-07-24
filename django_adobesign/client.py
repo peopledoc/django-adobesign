@@ -94,7 +94,7 @@ class AdobeSignClient(object):
 
     def post_agreement(self, transient_document_id, name, participants,
                        post_sign_redirect_url, post_sign_redirect_delay,
-                       state='IN_PROCESS', **extra_data):
+                       send_mail, state='IN_PROCESS', **extra_data):
         '''
         Create signature with only one document
 
@@ -142,8 +142,17 @@ class AdobeSignClient(object):
         }
         if post_sign_redirect_url:
             data['postSignOption'] = {
-                "redirectDelay": post_sign_redirect_delay,
-                "redirectUrl": post_sign_redirect_url
+                'redirectDelay': post_sign_redirect_delay,
+                'redirectUrl': post_sign_redirect_url
+            }
+
+        if not send_mail:
+            data['emailOption'] = {
+                'sendOptions': {
+                    'completionEmails': 'NONE',
+                    'inFlightEmails': 'NONE',
+                    'initEmails': 'NONE'
+                }
             }
 
         data.update(extra_data)

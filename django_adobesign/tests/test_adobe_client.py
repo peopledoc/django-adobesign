@@ -150,6 +150,7 @@ def test_should_create_signature(mocker, adobe_sign_client,
                         post_sign_redirect_url='http://post/sign/red/url',
                         post_sign_redirect_delay=12,
                         state='AUTHORING',
+                        send_mail=False,
                         extra_param_str='plop',
                         extra_param_dict={'poney': 42},
                         extra_param_list=[1, 2, 3])
@@ -165,6 +166,10 @@ def test_should_create_signature(mocker, adobe_sign_client,
             "redirectDelay": 12,
             "redirectUrl": 'http://post/sign/red/url'
         },
+        'emailOption': {'sendOptions': {'completionEmails': 'NONE',
+                                        'inFlightEmails': 'NONE',
+                                        'initEmails': 'NONE'}
+                        },
         'extra_param_str': 'plop',
         'extra_param_dict': {'poney': 42},
         'extra_param_list': [1, 2, 3]
@@ -188,7 +193,7 @@ def test_post_agreement_client_or_server_error(error_code, mocker,
                         return_value=expected_json_reply_error)
     mocker.patch('requests.post', return_value=response)
     with pytest.raises(AdobeSignException) as e:
-        adobe_sign_client.post_agreement('doc id', 'name', [], '-', '-')
+        adobe_sign_client.post_agreement('doc id', 'name', [], '-', '-', False)
     assert expected_json_reply_error['code'] in str(e)
     assert expected_json_reply_error['message'] in str(e)
 

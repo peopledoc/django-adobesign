@@ -40,7 +40,8 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         return jsonified_signers
 
     def create_signature(self, signature, post_sign_redirect_url=None,
-                         post_sign_redirect_delay=0, **extra_data):
+                         post_sign_redirect_delay=0,
+                         send_mail=True, **extra_data):
         """Register ``signature`` in AdobeSign service, return updated object.
         This method calls ``save()`` on ``signature`` and ``signer``.
 
@@ -58,6 +59,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
             state=signature.state,
             post_sign_redirect_url=post_sign_redirect_url,
             post_sign_redirect_delay=post_sign_redirect_delay,
+            send_mail=send_mail,
             **extra_data)
 
         # Update signature instance with record_id
