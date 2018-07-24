@@ -9,12 +9,14 @@ from django_adobesign.exceptions import AdobeSignException, \
     AdobeSignNoMoreSignerException
 
 ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
+ADOBE_OAUTH_REFRESH_TOKEN_URL = 'https://api.echosign.com/oauth/refresh'
 
 
 class AdobeSignOAuthSession(object):
     def __init__(self, application_id, redirect_uri, account_type, state=None):
+        self.application_id = application_id
         self.oauth_session = OAuth2Session(
-            client_id=application_id,
+            client_id=self.application_id,
             redirect_uri=redirect_uri,
             scope=self.get_scopes(account_type),
             state=state)
@@ -38,6 +40,16 @@ class AdobeSignOAuthSession(object):
             code=code,
             client_secret=application_secret,
             authorization_response='/')
+
+        return response
+
+    def refresh_token(self, refresh_token, application_secret):
+        response = self.oauth_session.refresh_token(
+            ADOBE_OAUTH_REFRESH_TOKEN_URL,
+            refresh_token=refresh_token,
+            client_id=self.application_id,  # ??????
+            client_secret=application_secret,
+            authorization_response="/")
 
         return response
 

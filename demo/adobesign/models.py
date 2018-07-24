@@ -32,6 +32,14 @@ class SignatureType(django_anysign.SignatureType):
                   'html',
         default='')
 
+    refresh_token = models.CharField(
+        _('AdobeSign refresh token'),
+        max_length=100,
+        help_text='https://www.adobe.io/apis/documentcloud/sign/docs/overview.'
+                  'html',
+        default='')
+
+
     @property
     def signature_backend_options(self):
         return {

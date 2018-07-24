@@ -5,51 +5,62 @@
 
 {% block content %}
 {% if signature_type %}
-<p>root url: {{ signature_type.root_url }}</p>
-<p>application_id: {{ signature_type.application_id }}</p>
-<p>application_secret : {{ signature_type.application_secret }}</p>
-<p>access_token : {{ signature_type.access_token }}
-    <a href="{% url 'token' %}">Get token</a></p>
-
-<a href="{% url 'update-settings' signature_type.pk %}">Change settings</a>
+    <h3>Settings</h3>
+    <p><b>root url</b>: {{ signature_type.root_url }}</p>
+    <p><b>application_id</b>: {{ signature_type.application_id }}</p>
+    <p><b>application_secret</b>: {{ signature_type.application_secret }}</p>
+    <a href="{% url 'update-settings' signature_type.pk %}">Change settings</a>
+    <p>-------------------------------------------</p>
+    <h3>Tokens</h3>
+    <p><b>access_token</b>: {{ signature_type.access_token }}</p>
+    <a href="{% url 'token' %}">Get token</a>
+    <br>
+    <a href="{% url 'refresh_token' %}">Refresh token</a>
+    <p>-------------------------------------------</p>
 {% else %}
-<a href="{% url 'create-settings' %}">Create settings</a>
+    <a href="{% url 'create-settings' %}">Create settings</a>
+    <p>-------------------------------------------</p>
 {% endif %}
 
 {% if signature_type.access_token %}
-<p><a href="{% url 'signature' %}">Create signature</a></p>
+    <h3>Signatures</h3>
+    {% if errors %}
+        <p style="color: red">ERRORS:: {{ errors }}</p>
+        <p>-------------------------------------------</p>
+    {% endif %}
+    <ul>
+        {% for signature in latest_signatures %}
+            <li>{{ signature.document_title }} {{ signature.signature_backend_id }}
+                {% if not signature.signature_backend_id %}
+                    <a href="{% url 'sign' signature.pk %}">
+                        Commit signature
+                    </a>
+                {% endif %}
+                <ul>
+                    {% for signer in signature.signers %}
+                        <li>Signer : {{ signer.name }} ({{ signer.mail }})
+                            <p>order: {{ signer.order }} status : {{ signer.status }}
+                                {% if signer.url %}
+                                Sign :
+                                <a href="{{ signer.url }}">url link</a>
 
-{% if errors %}
-<p style="color: red">ERRORS:: {{ errors }}</p>
-{% endif %}
-<ul>
-    {% for signature in latest_signatures %}
-    <li>{{ signature.document_title }} {{ signature.signature_backend_id }}
-        {% if not signature.signature_backend_id %}
-        <a href="{% url 'sign' signature.pk %}">
-            Commit signature
-        </a>
-        {% endif %}
-        <ul>
-            {% for signer in signature.signers %}
-            <li>Signer : {{ signer.name }} ({{ signer.mail }})
-                <p>order: {{ signer.order }} status : {{ signer.status }}
-                    {% if signer.url %}
-                    Sign :
-                    <a href="{{ signer.url }}">url link</a>
-
-                    {% endif %}
-                </p>
+                                {% endif %}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
             </li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% endfor %}
-</ul>
-<p> All agreements:</p>
+        {% endfor %}
+    </ul>
+<p><a href="{% url 'signature' %}">Create signature</a></p>
+<p>-------------------------------------------</p>
+<h3>All Adobe agreements</h3>
 <ul>
     {% for agreement in agreements %}
-    <li>{{ agreement }}</li>
+        {% for key, values in agreement.items %}
+            <li><b>{{ key }}</b>: {{ values}}</li>
+        {%endfor %}
+        <p>-------------------------------------------</p>
     {%endfor %}
 </ul>
 {% endif %}

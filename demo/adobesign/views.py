@@ -133,6 +133,25 @@ class TokenView(RedirectView):
         token_response = adobesign_oauth_client.create_token(
             code, signature_type.application_secret)
         signature_type.access_token = token_response.get('access_token')
+        signature_type.refresh_token = token_response.get('refresh_token')
+        signature_type.save()
+        return reverse('home')
+
+
+class RefreshTokenView(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        signature_type = SignatureType.objects.last()
+        redirect_uri = self.request.build_absolute_uri(reverse('token'))
+        adobesign_oauth_client = AdobeSignOAuthSession(
+            redirect_uri=redirect_uri,
+            application_id=signature_type.application_id,
+            account_type=ADOBESIGN_ACCOUNT_TYPE)
+        # Refresh token
+        refresh_token_response = adobesign_oauth_client.refresh_token(
+            signature_type.refresh_token,
+            signature_type.application_secret)
+        signature_type.access_token = refresh_token_response.get('access_token')
+        signature_type.refresh_token = refresh_token_response.get('refresh_token')
         signature_type.save()
         return reverse('home')
 
