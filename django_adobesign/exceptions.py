@@ -7,6 +7,16 @@ from requests.exceptions import RequestException
 class AdobeSignException(Exception):
     """An error occurred with AdobeSign wrapper API."""
 
+    @staticmethod
+    def to_adobe_exception(exception):
+        try:
+            json_data = exception.response.json()
+            message = '{} {} {}'.format(exception, json_data['code'],
+                                        json_data['message'])
+        except Exception:
+            message = exception
+        return AdobeSignException(message)
+
     def __str__(self):
         message = [repr(self)]
         if six.PY2:

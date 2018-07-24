@@ -79,7 +79,7 @@ class AdobeSignClient(object):
                                      data=data)
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException(e)
+            raise AdobeSignException.to_adobe_exception(e)
 
         return response.json()
 
@@ -154,13 +154,7 @@ class AdobeSignClient(object):
                                      json=data)
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:
-            try:
-                json_data = e.response.json()
-                message = '{} {} {}'.format(e, json_data['code'],
-                                            json_data['message'])
-            except Exception:
-                message = e
-            raise AdobeSignException(message)
+            raise AdobeSignException.to_adobe_exception(e)
         return response.json()
 
     def get_agreements(self, page_size, cursor=None, **extra_params):
@@ -175,7 +169,7 @@ class AdobeSignClient(object):
                                     params=params)
             response.raise_for_status()
         except(requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException(e)
+            raise AdobeSignException.to_adobe_exception(e)
         return response.json()
 
     def get_members(self, agreement_id, include_next_participant_set):
@@ -188,8 +182,7 @@ class AdobeSignClient(object):
                                     headers=self.get_headers())
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException(e)
-
+            raise AdobeSignException.to_adobe_exception(e)
         return response.json()
 
     def get_signing_url(self, agreement_id):
