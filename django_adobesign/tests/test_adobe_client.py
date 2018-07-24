@@ -37,10 +37,13 @@ def test_oauth_create(mocker, adobe_oauth_session):
     mocker.patch.object(adobe_oauth_session.oauth_session, 'fetch_token')
     adobe_oauth_session.create_token('code_test', 'appli_secret_test')
     mocked_function = adobe_oauth_session.oauth_session.fetch_token
-    mocked_function.assert_called_with(ADOBE_OAUTH_TOKEN_URL,
-                                       code='code_test',
-                                       client_secret='appli_secret_test',
-                                       authorization_response='/')
+    mandatory_parameters = mocked_function.call_args[0]
+    assert mandatory_parameters == (ADOBE_OAUTH_TOKEN_URL,)
+
+    kwargs_params = mocked_function.call_args[1]
+    assert kwargs_params == {'code': 'code_test',
+                             'client_secret': 'appli_secret_test',
+                             'authorization_response': '/'}
 
 
 @pytest.fixture()
@@ -106,15 +109,18 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
     expected_data = {
         'File-Name': 'test_document.pdf',
         'Mime-Type': 'application/pdf'}
-    mocked_post.assert_called_with(
-        'http://test/api/rest/v6/transientDocuments',
-        headers=expected_headers,
-        files={'File': test_document},
-        data=expected_data)
+    mandatory_parameters = mocked_post.call_args[0]
+    assert mandatory_parameters == (
+        'http://test/api/rest/v6/transientDocuments',)
+
+    kwargs_params = mocked_post.call_args[1]
+    assert kwargs_params == {'headers': expected_headers,
+                             'files': {'File': test_document},
+                             'data': expected_data}
 
 
 @pytest.fixture()
-def response_with_error(mocker):
+def response_with_error():
     def __get_response(error_code):
         response_with_client_error = Response()
         response_with_client_error.status_code = error_code
@@ -163,9 +169,12 @@ def test_should_create_signature(mocker, adobe_sign_client,
         'extra_param_dict': {'poney': 42},
         'extra_param_list': [1, 2, 3]
     }
-    mocked_post.assert_called_with('http://test/api/rest/v6/agreements',
-                                   headers=expected_headers,
-                                   json=expected_json)
+    mandatory_parameters = mocked_post.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/agreements',)
+
+    kwargs_params = mocked_post.call_args[1]
+    assert kwargs_params == {'headers': expected_headers,
+                             'json': expected_json}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -192,9 +201,12 @@ def test_get_agreements(mocker, adobe_sign_client, expected_headers):
     expected_params = {'pageSize': 12,
                        'cursor': 44,
                        'extra_param_test': {'test': 1}}
-    mocked_get.assert_called_with('http://test/api/rest/v6/agreements',
-                                  headers=expected_headers,
-                                  params=expected_params)
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/agreements',)
+
+    kwargs_params = mocked_get.call_args[1]
+    assert kwargs_params == {'headers': expected_headers,
+                             'params': expected_params}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -213,10 +225,14 @@ def test_get_members(include_next_participant_set, mocker, adobe_sign_client,
     adobe_sign_client.get_members('test_agreement_id',
                                   include_next_participant_set)
 
-    mocked_get.assert_called_with(
-        'http://test/api/rest/v6/agreements/test_agreement_id/members',
-        params={'includeNextParticipantSet': include_next_participant_set},
-        headers=expected_headers)
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == (
+        'http://test/api/rest/v6/agreements/test_agreement_id/members',)
+
+    kwargs_params = mocked_get.call_args[1]
+    assert kwargs_params == {
+        'params': {'includeNextParticipantSet': include_next_participant_set},
+        'headers': expected_headers}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -232,9 +248,12 @@ def test_get_signing_url(mocker, adobe_sign_client, expected_headers):
     mocked_get = mocker.patch('requests.get')
     adobe_sign_client.get_signing_url('test_agreement_id')
 
-    mocked_get.assert_called_with(
-        'http://test/api/rest/v6/agreements/test_agreement_id/signingUrls',
-        headers=expected_headers)
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == (
+        'http://test/api/rest/v6/agreements/test_agreement_id/signingUrls',)
+
+    kwargs_parameters = mocked_get.call_args[1]
+    assert kwargs_parameters == {'headers': expected_headers}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
