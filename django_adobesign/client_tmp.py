@@ -161,7 +161,7 @@ def signature_flow(token, path):
     print("WAIT signers")
     while True:
         status = get_agreement_status(token, agreement_id)
-        print (status)
+        print(status)
         if status == 'SIGNED':
             break
 

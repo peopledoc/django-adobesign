@@ -47,8 +47,8 @@ class HomeView(TemplateView):
         """
         Be careful:
         There is a latency between the moment where the post call is done to
-        create a signature agreement and when it is really available through the
-        returned id in other api endpoints."""
+        create a signature agreement and when it is really available through
+        the returned id in other api endpoints."""
         # We assume the demo is only run in Python3 (cf. range)
         for i in range(0, nb_try):
             try:
@@ -62,8 +62,9 @@ class HomeView(TemplateView):
         if signature_id:
             backend = get_adobesign_backend(signature_type)
 
-            next_signer_mail, next_signer_url = self.get_next_signer_with_retry(
-                backend, signature_id, nb_try=1, wait=0)
+            next_signer_mail, next_signer_url = \
+                self.get_next_signer_with_retry(backend, signature_id,
+                                                nb_try=1, wait=0)
 
             signers_data = backend.get_all_signers(signature_id)
             if 'participantSets' in signers_data:
