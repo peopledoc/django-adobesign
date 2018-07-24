@@ -1,3 +1,5 @@
+from time import sleep
+
 from adobesign.models import Signer
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, \
@@ -40,12 +42,28 @@ class HomeView(TemplateView):
         backend = get_adobesign_backend(signature_type)
         return backend.get_agreements(3)['userAgreementList']
 
+    def get_next_signer_with_retry(self, backend, signature_id, nb_try=5,
+                                   wait=1):
+        """
+        Be careful:
+        There is a latency between the moment where the post call is done to
+        create a signature agreement and when it is really available through the
+        returned id in other api endpoints."""
+        # We assume the demo is only run in Python3 (cf. range)
+        for i in range(0, nb_try):
+            try:
+                return backend.get_next_signer_url(signature_id)
+            except AdobeSignException:
+                sleep(wait)
+        return None, None
+
     def get_signers_status(self, signature_id, signature_type):
         signers = []
         if signature_id:
             backend = get_adobesign_backend(signature_type)
-            next_signer_mail, next_signer_url = backend.get_next_signer_url(
-                signature_id)
+
+            next_signer_mail, next_signer_url = self.get_next_signer_with_retry(
+                backend, signature_id, nb_try=1, wait=0)
 
             signers_data = backend.get_all_signers(signature_id)
             if 'participantSets' in signers_data:
