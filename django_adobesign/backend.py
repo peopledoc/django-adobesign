@@ -68,9 +68,22 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
     def get_agreements(self, page_size=20, cursor=None, **extra_params):
         """
             Return all agreements associated to the given access token
+
+            Be careful: reply structure is not the same if there is agreements
+            or not
+
+            case not empty: {
+                            "page": {"nextCursor": "..."}
+                            "userAgreementList": [ agreement1, ... ]
+                            }
+            case empty: []
+
+            For compliance, in case of empty agreement list we artificially
+            return the structure above
         """
-        return self.adobesign_client.get_agreements(page_size, cursor,
-                                                    **extra_params)
+        agreements = self.adobesign_client.get_agreements(page_size, cursor,
+                                                          **extra_params)
+        return agreements or {'userAgreementList': []}
 
     def get_next_signers(self, agreement_id):
         """ Return the next signer list."""
