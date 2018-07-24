@@ -64,7 +64,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
 
         # Update signature instance with record_id
         signature.signature_backend_id = result['id']
-        signature.save()
+        signature.save(update_fields=['signature_backend_id'])
         return signature
 
     def get_agreements(self, page_size=20, cursor=None, **extra_params):
