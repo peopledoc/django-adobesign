@@ -19,9 +19,9 @@
 {% if signature_type.access_token %}
 <p><a href="{% url 'signature' %}">Create signature</a></p>
 
-{% if latest_signatures_error %}
-<p>{{ latest_signatures_error }}</p>
-{% else %}
+{% if errors %}
+<p style="color: red">ERRORS:: {{ errors }}</p>
+{% endif %}
 <ul>
     {% for signature in latest_signatures %}
     <li>{{ signature.document_title }} {{ signature.signature_backend_id }}
@@ -46,9 +46,7 @@
     </li>
     {% endfor %}
 </ul>
-{% endif %}
 <p> All agreements:</p>
-{% if agreements_list_error %} <p>{{ agreements_list_error }}</p>{% endif %}
 <ul>
     {% for agreement in agreements %}
     <li>{{ agreement }}</li>

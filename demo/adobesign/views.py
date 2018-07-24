@@ -106,12 +106,10 @@ class HomeView(TemplateView):
             if signature_type.access_token:
                 try:
                     data['agreements'] = self.get_agreements(signature_type)
-                except AdobeSignException as e:
-                    data['agreements_list_error'] = e
-                try:
                     data['latest_signatures'] = self.get_latest_signature(
                         signature_type)
                 except AdobeSignException as e:
+                    data['errors'] = e
                     print(e)
 
         return data
