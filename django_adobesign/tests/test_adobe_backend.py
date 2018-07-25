@@ -1,7 +1,7 @@
 import pytest
+from adobesign.models import Signer, Signature, SignatureType
 from django.core.files import File
 from django.db.models import FileField
-from adobesign.models import Signer, Signature, SignatureType
 
 from django_adobesign.backend import AdobeSignBackend
 from django_adobesign.client import AdobeSignClient
@@ -96,3 +96,16 @@ def test_get_next_signer_url(mocker, adobe_sign_backend):
                         return_value=data)
     mail, url = adobe_sign_backend.get_next_signer_url('12')
     assert (mail, url) == ('pouet@truc.com', 'url')
+
+
+@pytest.mark.django_db
+def test_is_last_signer(adobe_sign_backend, minimal_signature):
+    signer1 = Signer(full_name='A', email='a@b.c', signing_order=1)
+    signer2 = Signer(full_name='B', email='d@e.f', signing_order=2)
+    signer2.signature = minimal_signature
+    signer1.signature = minimal_signature
+    signer2.save()
+    signer1.save()
+
+    assert not adobe_sign_backend.is_last_signer(signer1)
+    assert adobe_sign_backend.is_last_signer(signer2)

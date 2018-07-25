@@ -291,3 +291,68 @@ def test_get_signing_url_client_not_found_error(mocker,
     with pytest.raises(AdobeSignException) as e:
         assert not isinstance(e, AdobeSignNoMoreSignerException)
         adobe_sign_client.get_signing_url('id')
+
+
+def test_get_signer(mocker, adobe_sign_client, expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_signer('test_agreement_id', 'signer_id')
+
+    mandatory_parameters = mocked_get.call_args[0]
+    expected_url = 'http://test/api/rest/v6/agreements/test_agreement_id/' \
+                   'members/participantSets/signer_id'
+    assert mandatory_parameters == (expected_url,)
+
+    kwargs_parameters = mocked_get.call_args[1]
+    assert kwargs_parameters == {'headers': expected_headers}
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_signer_client_or_server_error(error_code, mocker,
+                                           response_with_error,
+                                           adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(AdobeSignException):
+        adobe_sign_client.get_signer('test_agreement_id', 'signer_id')
+
+
+def test_get_documents(mocker, adobe_sign_client, expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_documents('test_agreement_id', test_data={'a': 2})
+
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/agreements/'
+                                    'test_agreement_id/documents',)
+
+    kwargs_parameters = mocked_get.call_args[1]
+    assert kwargs_parameters == {'headers': expected_headers,
+                                 'data': {'test_data': {'a': 2}}}
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_documents_client_or_server_error(error_code, mocker,
+                                              response_with_error,
+                                              adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(AdobeSignException):
+        adobe_sign_client.get_documents('test_agreement_id')
+
+
+def test_get_document(mocker, adobe_sign_client, expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/agreements/'
+                                    'test_agreement_id/documents/test_doc_id',)
+
+    kwargs_parameters = mocked_get.call_args[1]
+    assert kwargs_parameters == {'headers': expected_headers}
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_document_client_or_server_error(error_code, mocker,
+                                             response_with_error,
+                                             adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(AdobeSignException):
+        adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')

@@ -47,7 +47,7 @@ class AdobeSignOAuthSession(object):
         response = self.oauth_session.refresh_token(
             ADOBE_OAUTH_REFRESH_TOKEN_URL,
             refresh_token=refresh_token,
-            client_id=self.application_id,  # ??????
+            client_id=self.application_id,  #  ??????
             client_secret=application_secret,
             authorization_response="/")
 
@@ -225,3 +225,34 @@ class AdobeSignClient(object):
         except requests.exceptions.RequestException as e:
             raise AdobeSignException(e)
         return response.json()
+
+    def get_signer(self, agreement_id, signer_id):
+        url = self.build_url('agreements/{}/members/participantSets/{}'
+                             .format(agreement_id, signer_id))
+        try:
+            response = requests.get(url, headers=self.get_headers())
+            response.raise_for_status()
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise AdobeSignException.to_adobe_exception(e)
+        return response.json()
+
+    def get_documents(self, agreement_id, **extra_data):
+        url = self.build_url('agreements/{}/documents'.format(agreement_id))
+        try:
+            print('---{}--'.format(url))
+            response = requests.get(url, headers=self.get_headers(),
+                                    data=extra_data)
+            response.raise_for_status()
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise AdobeSignException.to_adobe_exception(e)
+        return response.json()
+
+    def get_document(self, agreement_id, document_id):
+        url = self.build_url('agreements/{}/documents/{}'
+                             .format(agreement_id, document_id))
+        try:
+            response = requests.get(url, headers=self.get_headers())
+            response.raise_for_status()
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise AdobeSignException.to_adobe_exception(e)
+        return response.content

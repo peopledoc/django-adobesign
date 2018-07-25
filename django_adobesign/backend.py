@@ -51,7 +51,6 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         # Upload document
         response = self.adobesign_client.upload_document(document)
         transient_document_id = response.get('transientDocumentId')
-
         result = self.adobesign_client.post_agreement(
             transient_document_id=transient_document_id,
             name=str(signature),
@@ -120,3 +119,24 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         """
         return self.adobesign_client. \
             get_members(agreement_id, include_next_participant_set=False)
+
+    def get_signer(self, argeement_id, signer_id):
+        return self.adobesign_client.get_signer(argeement_id, signer_id)
+
+    def get_signer_status(self, argeement_id, signer_id):
+        signer = self.get_signer(argeement_id, signer_id)
+        if 'memberInfos' in signer and signer_id['memberInfos']:
+            return signer['memberInfos'][0].get('status')
+
+    def is_last_signer(self, signer):
+        """Return True if ``signer`` is the last signer for the signature
+        request.
+        """
+        return not signer.signature.signers.filter(
+            signing_order__gt=signer.signing_order).exists()
+
+    def get_documents(self, agreement_id):
+        documents_info = self.adobesign_client.get_documents(agreement_id)
+        for doc_info in documents_info.get('documents', []):
+            yield self.adobesign_client.get_document(agreement_id,
+                                                     doc_info['id'])
