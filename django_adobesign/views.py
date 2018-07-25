@@ -5,6 +5,8 @@ from django.views.generic.base import RedirectView
 from django.views.generic.detail import SingleObjectMixin
 from django_anysign import api as django_anysign
 
+from django_adobesign.exceptions import AdobeSignException
+
 
 class SignerReturnView(SingleObjectMixin, RedirectView):
     """Handle return of signer on project after document signing/reject.
@@ -15,43 +17,77 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         """Route request to signer return view depending on status.
         Trigger events for latest signer: calls
         ``signer_{status}`` methods.
+
+        Adobe signer status:
+        - COMPLETED: everybody has signed
+        - WAITING_FOR_OTHERS: the signer has already signed
+        - NOT_YET_VISIBLE: the signer signing url is not generated yet,
+                           it is not his turn to sign
+        - WAITING_FOR_MY_SIGNATURE: the user signing url is generated, it is
+                                    his turn to sign
+        - CANCELLED: the user has refused to sign
+        -  WAITING_FOR_AUTHORING, WAITING_FOR_MY_DELEGATION
+            WAITING_FOR_MY_ACCEPTANCE, WAITING_FOR_MY_ACKNOWLEDGEMENT
+            WAITING_FOR_MY_APPROVAL, WAITING_FOR_MY_FORM_FILLING
+
+        TODO: check what happened if the signature owner delete or cancel
+        the agreement
+
         """
 
-        # (adobe + notre modele) --> trouver le current
-        # current on le màj
-        # retourner l'url error/completed etc
+        agreement_id = self.signature.signature_backend_id
+        signer = self.get_current_signer(agreement_id)
 
-        signature = self.get_object()
-        adobe_signer = self.get_current_signer(signature.signature_backend_id)
+        adobe_signer_id = self.get_signer_adobe_id(signer)
+        status = self.backend.get_signer_status(agreement_id, adobe_signer_id)
 
-        status = self.get_recipient_status(recipient)
+        if status == 'CANCELLED':
+            self.update_signature(status)
+            return self.get_signer_canceled_url(status)
 
-        if status == 'authentication_failed':
-            self.signer_authenticationfailed()
-            return self.get_signer_error_url(docusign_event, status)
+        if status == 'COMPLETED':
+            if not self.backend.is_last_signer(signer):
+                raise AdobeSignException('Consistency issue, agreement {} '
+                                         'is complete, remaining signers have '
+                                         'been found'.format(agreement_id))
+            self.signer_signed(status)
+            self.update_signature(status)
+            return self.get_signer_signed_url(status)
+        if status == 'WAITING_FOR_OTHERS':
+            self.signer_signed(status)
+            return self.get_signer_signed_url(status)
 
-        if status == 'auto_responded':
-            self.signer_autoresponded()
-            return self.get_signer_error_url(docusign_event, status)
-
-        if status == 'completed':
-            self.signer_signed()
-            return self.get_signer_signed_url(docusign_event, status)
-
-        if status == 'declined':
-            decline_message = recipient['declinedReason']
-            self.signer_declined(decline_message)
-            return self.get_signer_declined_url(docusign_event, status)
-
-        # other status: redirect to canceled page as if action was canceled
-        return self.get_signer_canceled_url(docusign_event, status)
+        return self.get_signer_error_url(status)
 
     def get_current_signer(self, agreement_id):
-        self.signature_backend
+        for signer in self.signature.signers.all().order_by('signing_order'):
+            if not self.has_already_signed(signer):
+                return signer
+        raise AdobeSignException(
+            'Can not find a current signer for agreement {}'.format(
+                agreement_id))
 
     def get_queryset(self):
         model = django_anysign.get_signer_model()
         return model.objects.all()
+
+    def get_signed_document(self):
+        # In our model, there is only one doc.
+        return next(self.backend.get_documents(self.signature))
+
+    def signer_cancel(self, message):
+        """Handle 'Cancel' status for signer."""
+        self.update_signer(status='cancel', message=message)
+        self.update_signature(status='cancel')
+
+    def signer_signed(self, status):
+        """ Update signer status after he sign
+        """
+        # download signed document out of the atomic block
+        signed_document = self.get_signed_document()
+        with transaction.atomic():
+            self.replace_document(signed_document)
+            self.update_signer(status)
 
     @property
     def signature(self):
@@ -65,97 +101,43 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         try:
             return self._signature
         except AttributeError:
-            self._signature = self.get_object().signature
+            self._signature = self.get_object()
             return self._signature
 
     @property
-    def signature_backend(self):
+    def backend(self):
         try:
-            return self._signature_backend
+            return self._backend
         except AttributeError:
-            self._signature_backend = self.get_signature_backend()
-            return self._signature_backend
+            self._backend = self.signature.signature_backend
+            return self._backend
 
-    def get_signature_backend(self):
-        """Return signature backend instance."""
-        return self.signature.signature_backend
+    def get_signer_adobe_id(self, signer):
+        raise NotImplementedError()
 
-    def get_signer_canceled_url(self, event, status):
+    def has_already_signed(self, status):
+        raise NotImplementedError()
+
+    def get_signer_canceled_url(self, status):
         """Url redirect when signer canceled signature."""
         raise NotImplementedError()
 
-    def get_signer_error_url(self, event, status):
+    def get_signer_error_url(self, status):
         """Url redirect when failure."""
         raise NotImplementedError()
 
-    def get_signer_declined_url(self, event, status):
-        """Url redirect when signer declined signature."""
-        raise NotImplementedError()
-
-    def get_signer_signed_url(self, event, status):
+    def get_signer_signed_url(self, status):
         """Url redirect when signer signed signature."""
         raise NotImplementedError()
-
-    def get_recipient_status(self, recipient):
-        pass  # TODO
-        # # signature with access code ?
-        # try:
-        #     auth_status = recipient['recipientAuthenticationStatus']
-        #     access_status = auth_status['accessCodeResult']['status'].lower()
-        #     if 'passed' != access_status:
-        #         return 'authentication_' + access_status
-        # except KeyError:
-        #     pass
-        # return recipient['status']
 
     def update_signature(self, status):
         """ Update signature with ``status``."""
         raise NotImplementedError()
 
-    def signature_completed(self):
-        """Handle 'completed' status .
-        """
-        self.update_signature(status='completed')
-
-    def signature_declined(self):
-        """Handle 'declined' status ."""
-        self.update_signature(status='declined')
-
     def update_signer(self, status, message=''):
         """Update ``signer`` with ``status``."""
         raise NotImplementedError()
 
-    def get_signed_document(self):
-        # In our model, there is only one doc.
-        backend = self.signature_backend
-        return next(backend.get_docusign_documents(self.signature))
-
     def replace_document(self, signed_document):
         """Replace original document by signed one."""
         raise NotImplementedError()
-
-    def signer_declined(self, message):
-        """Handle 'Declined' status for signer."""
-        self.update_signer(status='declined', message=message)
-        self.signature_declined()
-
-    def signer_signed(self):
-        """Handle 'Completed' status for signer.
-        """
-        backend = self.signature_backend
-        is_last_signer = backend.is_last_signer(self.get_object())
-        # download signed document out of the atomic block
-        signed_document = self.get_signed_document()
-        with transaction.atomic():
-            self.replace_document(signed_document)
-            self.update_signer(status='completed')
-            if is_last_signer:
-                self.signature_completed()
-
-    def signer_authenticationfailed(self):
-        """Handle 'AuthenticationFailed' status for signer."""
-        self.update_signer(status='authentication_failed')
-
-    def signer_autoresponded(self):
-        """Handle 'AutoResponded' status for signer."""
-        self.update_signer(status='auto_responded')

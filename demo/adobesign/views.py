@@ -147,11 +147,11 @@ class RefreshTokenView(RedirectView):
             application_id=signature_type.application_id,
             account_type=ADOBESIGN_ACCOUNT_TYPE)
         # Refresh token
-        refresh_token_response = adobesign_oauth_client.refresh_token(
+        refresh_token_resp = adobesign_oauth_client.refresh_token(
             signature_type.refresh_token,
             signature_type.application_secret)
-        signature_type.access_token = refresh_token_response.get('access_token')
-        signature_type.refresh_token = refresh_token_response.get('refresh_token')
+        signature_type.access_token = refresh_token_resp.get('access_token')
+        signature_type.refresh_token = refresh_token_resp.get('refresh_token')
         signature_type.save()
         return reverse('home')
 

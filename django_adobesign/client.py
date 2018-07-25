@@ -47,7 +47,7 @@ class AdobeSignOAuthSession(object):
         response = self.oauth_session.refresh_token(
             ADOBE_OAUTH_REFRESH_TOKEN_URL,
             refresh_token=refresh_token,
-            client_id=self.application_id,  #  ??????
+            client_id=self.application_id,
             client_secret=application_secret,
             authorization_response="/")
 

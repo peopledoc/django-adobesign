@@ -39,7 +39,6 @@ class SignatureType(django_anysign.SignatureType):
                   'html',
         default='')
 
-
     @property
     def signature_backend_options(self):
         return {
