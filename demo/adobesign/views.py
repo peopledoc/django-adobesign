@@ -102,8 +102,8 @@ class HomeView(TemplateView):
             })
             # Just for demo disply
             for signer in latest_signatures[-1]['signers']:
-                db_signer = signature.signers.get(signing_order=signer['order'],
-                                                  email=signer['mail'])
+                db_signer = signature.signers.get(
+                    signing_order=signer['order'], email=signer['mail'])
                 signer['current_status'] = db_signer.current_status
                 signer['adobe_id'] = db_signer.adobe_id
         return latest_signatures
@@ -219,15 +219,6 @@ class Sign(RedirectView, SingleObjectMixin, SignerMixin):
 
 
 class DemoSignerReturnView(SignerReturnView):
-    # def get_signature_backend(self):
-    #     """Return signature backend instance."""
-    #     backend_settings = docusign_settings(self.request)
-    #     signature_backend = django_anysign.get_signature_backend(
-    #         'docusign',
-    #         **backend_settings
-    #     )
-    #     return signature_backend
-
     def replace_document(self, signed_document):
         # Replace old document by signed one.
         filename = self.signature.document.name
@@ -239,7 +230,7 @@ class DemoSignerReturnView(SignerReturnView):
         signer.save()
 
     def update_signature(self, status):
-        self.signature.status = status
+        self.signature.state = status
         self.signature.save()
 
     def get_signer_signed_url(self, status):

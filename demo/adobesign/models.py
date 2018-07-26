@@ -40,11 +40,6 @@ class SignatureType(django_anysign.SignatureType):
                   'html',
         default='')
 
-    status = models.CharField(
-        _('Internal signature status'),
-        max_length=100,
-        default='NOT_COMPLET')
-
     @property
     def signature_backend_options(self):
         return {

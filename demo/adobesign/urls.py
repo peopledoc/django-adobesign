@@ -29,5 +29,6 @@ urlpatterns = [
     path('signature', views.CreateSignatureView.as_view(), name='signature'),
     path('signer', views.CreateSigner.as_view(), name='signer'),
     path('sign/<int:pk>', views.Sign.as_view(), name='sign'),
-    path('signed/<int:pk>', views.DemoSignerReturnView.as_view(), name='signed')
+    path('signed/<int:pk>', views.DemoSignerReturnView.as_view(),
+         name='signed')
 ]
