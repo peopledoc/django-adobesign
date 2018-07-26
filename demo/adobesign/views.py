@@ -1,14 +1,14 @@
-from time import sleep
-
 from adobesign.models import Signer
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, \
     RedirectView
 from django.views.generic.detail import SingleObjectMixin
+from time import sleep
 
 from django_adobesign.backend import AdobeSignBackend
 from django_adobesign.client import AdobeSignClient, AdobeSignOAuthSession
 from django_adobesign.exceptions import AdobeSignException
+from django_adobesign.views import SignerReturnView, SignerMixin
 from .models import Signature, SignatureType
 
 ADOBESIGN_ACCOUNT_TYPE = 'self'
@@ -27,6 +27,12 @@ class SettingsCreate(CreateView):
     model = SignatureType
     fields = ['root_url', 'application_id', 'application_secret']
     success_url = "/"
+
+    def form_valid(self, form):
+        ret = super(SettingsCreate, self).form_valid(form)
+        self.object.signature_backend_code = 'adobesign'
+        self.object.save()
+        return ret
 
 
 class SettingsUpdate(UpdateView):
@@ -94,6 +100,12 @@ class HomeView(TemplateView):
                 'signers': self.get_signers_status(
                     signature.signature_backend_id, signature_type),
             })
+            # Just for demo disply
+            for signer in latest_signatures[-1]['signers']:
+                db_signer = signature.signers.get(signing_order=signer['order'],
+                                                  email=signer['mail'])
+                signer['current_status'] = db_signer.current_status
+                signer['adobe_id'] = db_signer.adobe_id
         return latest_signatures
 
     def get_context_data(self, **kwargs):
@@ -173,7 +185,7 @@ class CreateSigner(CreateView):
     success_url = reverse_lazy('home')
 
     def get_initial(self):
-        return {'signing_order': 1}
+        return {'signing_order': Signature.objects.last().signers.count() + 1}
 
     def form_valid(self, form):
         if 'saveadd' in self.get_form().data:
@@ -185,7 +197,7 @@ class CreateSigner(CreateView):
         return super(CreateSigner, self).get_form_kwargs()
 
 
-class Sign(SingleObjectMixin, RedirectView):
+class Sign(RedirectView, SingleObjectMixin, SignerMixin):
     model = Signature
 
     def get_redirect_url(self, *args, **kwargs):
@@ -195,5 +207,52 @@ class Sign(SingleObjectMixin, RedirectView):
         backend.create_signature(
             signature=signature,
             post_sign_redirect_url=self.request.build_absolute_uri(
-                reverse('home')))
+                reverse('signed', kwargs={'pk': signature.pk})))
+
+        self.map_adobe_signer_to_signer(signature, backend)
         return reverse('home')
+
+    def update_signer_with_adobe_data(self, signer, adobe_id, status):
+        signer.adobe_id = adobe_id
+        signer.current_status = status
+        signer.save(update_fields=['adobe_id', 'current_status'])
+
+
+class DemoSignerReturnView(SignerReturnView):
+    # def get_signature_backend(self):
+    #     """Return signature backend instance."""
+    #     backend_settings = docusign_settings(self.request)
+    #     signature_backend = django_anysign.get_signature_backend(
+    #         'docusign',
+    #         **backend_settings
+    #     )
+    #     return signature_backend
+
+    def replace_document(self, signed_document):
+        # Replace old document by signed one.
+        filename = self.signature.document.name
+        with open(filename, 'wb') as fd:
+            fd.write(signed_document)
+
+    def update_signer(self, signer, status, message=''):
+        signer.current_status = status
+        signer.save()
+
+    def update_signature(self, status):
+        self.signature.status = status
+        self.signature.save()
+
+    def get_signer_signed_url(self, status):
+        return reverse('home')
+
+    def get_signer_error_url(self, status):
+        return reverse('home')
+
+    def get_signer_canceled_url(self, status):
+        return reverse('home')
+
+    def has_already_signed(self, signer):
+        return signer.current_status in ('COMPLETED', 'WAITING_FOR_OTHERS')
+
+    def get_signer_adobe_id(self, signer):
+        return signer.adobe_id

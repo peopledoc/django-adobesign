@@ -237,9 +237,11 @@ class AdobeSignClient(object):
         return response.json()
 
     def get_documents(self, agreement_id, **extra_data):
+        """
+        Return all document ids for a given agreement id
+        """
         url = self.build_url('agreements/{}/documents'.format(agreement_id))
         try:
-            print('---{}--'.format(url))
             response = requests.get(url, headers=self.get_headers(),
                                     data=extra_data)
             response.raise_for_status()
@@ -248,6 +250,9 @@ class AdobeSignClient(object):
         return response.json()
 
     def get_document(self, agreement_id, document_id):
+        """
+        Download a document
+        """
         url = self.build_url('agreements/{}/documents/{}'
                              .format(agreement_id, document_id))
         try:

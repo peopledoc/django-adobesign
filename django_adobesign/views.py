@@ -50,11 +50,11 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
                 raise AdobeSignException('Consistency issue, agreement {} '
                                          'is complete, remaining signers have '
                                          'been found'.format(agreement_id))
-            self.signer_signed(status)
+            self.signer_signed(status, signer)
             self.update_signature(status)
             return self.get_signer_signed_url(status)
         if status == 'WAITING_FOR_OTHERS':
-            self.signer_signed(status)
+            self.signer_signed(status, signer)
             return self.get_signer_signed_url(status)
 
         return self.get_signer_error_url(status)
@@ -68,26 +68,27 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
                 agreement_id))
 
     def get_queryset(self):
-        model = django_anysign.get_signer_model()
+        model = django_anysign.get_signature_model()
         return model.objects.all()
 
     def get_signed_document(self):
         # In our model, there is only one doc.
-        return next(self.backend.get_documents(self.signature))
+        return next(
+            self.backend.get_documents(self.signature.signature_backend_id))
 
     def signer_cancel(self, message):
         """Handle 'Cancel' status for signer."""
         self.update_signer(status='cancel', message=message)
         self.update_signature(status='cancel')
 
-    def signer_signed(self, status):
+    def signer_signed(self, status, signer):
         """ Update signer status after he sign
         """
         # download signed document out of the atomic block
         signed_document = self.get_signed_document()
         with transaction.atomic():
             self.replace_document(signed_document)
-            self.update_signer(status)
+            self.update_signer(signer, status)
 
     @property
     def signature(self):
@@ -115,7 +116,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
     def get_signer_adobe_id(self, signer):
         raise NotImplementedError()
 
-    def has_already_signed(self, status):
+    def has_already_signed(self, signer):
         raise NotImplementedError()
 
     def get_signer_canceled_url(self, status):
@@ -134,10 +135,27 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         """ Update signature with ``status``."""
         raise NotImplementedError()
 
-    def update_signer(self, status, message=''):
+    def update_signer(self, signer, status, message=''):
         """Update ``signer`` with ``status``."""
         raise NotImplementedError()
 
     def replace_document(self, signed_document):
         """Replace original document by signed one."""
         raise NotImplementedError()
+
+
+class SignerMixin(object):
+
+    def update_signer_with_adobe_data(self, signer, adobe_id, status):
+        raise NotImplementedError
+
+    def map_adobe_signer_to_signer(self, signature, backend):
+        # Can raise a Signer.DoesNotExist
+        for adobe_signer in backend.get_all_signers(
+                signature.signature_backend_id).get('participantSets', []):
+            # We only have 1 signer by turn
+            email = adobe_signer['memberInfos'][0]['email']
+            signer = signature.signers.get(signing_order=adobe_signer['order'],
+                                           email=email)
+            self.update_signer_with_adobe_data(signer, adobe_signer['id'],
+                                               adobe_signer['status'])

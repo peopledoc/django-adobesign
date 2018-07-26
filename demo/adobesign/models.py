@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
 from django_anysign import api as django_anysign
+
+from django_adobesign.client import AdobeSignClient
 
 
 class SignatureType(django_anysign.SignatureType):
@@ -39,11 +40,16 @@ class SignatureType(django_anysign.SignatureType):
                   'html',
         default='')
 
+    status = models.CharField(
+        _('Internal signature status'),
+        max_length=100,
+        default='NOT_COMPLET')
+
     @property
     def signature_backend_options(self):
         return {
-            'root_url': self.root_url,
-            'token': self.access_token
+            'adobesign_client': AdobeSignClient(self.root_url,
+                                                self.access_token)
         }
 
 
@@ -85,4 +91,17 @@ class Signer(django_anysign.SignerFactory(Signature)):
     email = models.EmailField(
         _('email'),
         db_index=True,
+    )
+
+    current_status = models.CharField(
+        _('Internal signer status'),
+        max_length=50,
+        db_index=True,
+        default='NOT_YET_VISIBLE'
+    )
+    adobe_id = models.CharField(
+        _('Internal adobe id'),
+        max_length=50,
+        db_index=True,
+        default=u''
     )

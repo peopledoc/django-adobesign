@@ -125,8 +125,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
 
     def get_signer_status(self, argeement_id, signer_id):
         signer = self.get_signer(argeement_id, signer_id)
-        if 'memberInfos' in signer and signer_id['memberInfos']:
-            return signer['memberInfos'][0].get('status')
+        return signer.get('status')
 
     def is_last_signer(self, signer):
         """Return True if ``signer`` is the last signer for the signature

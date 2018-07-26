@@ -126,7 +126,7 @@ ANYSIGN = {
     'BACKENDS': {
         'adobesign': 'django_adobesign.backend.AdobeSignBackend',
     },
-    'SIGNATURE_TYPE_MODEL': 'demo.adobesign.models.SignatureType',
-    'SIGNATURE_MODEL': 'demo.adobesign.models.Signature',
-    'SIGNER_MODEL': 'demo.adobesign.models.Signer',
+    'SIGNATURE_TYPE_MODEL': 'adobesign.models.SignatureType',
+    'SIGNATURE_MODEL': 'adobesign.models.Signature',
+    'SIGNER_MODEL': 'adobesign.models.Signer',
 }
