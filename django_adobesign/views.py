@@ -29,10 +29,6 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         -  WAITING_FOR_AUTHORING, WAITING_FOR_MY_DELEGATION
             WAITING_FOR_MY_ACCEPTANCE, WAITING_FOR_MY_ACKNOWLEDGEMENT
             WAITING_FOR_MY_APPROVAL, WAITING_FOR_MY_FORM_FILLING
-
-        TODO: check what happened if the signature owner delete or cancel
-        the agreement
-
         """
 
         agreement_id = self.signature.signature_backend_id

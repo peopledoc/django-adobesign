@@ -60,9 +60,7 @@ class Signature(django_anysign.SignatureFactory(SignatureType)):
     state = models.CharField(
         _('AdobeSign state'),
         max_length=100,
-        help_text='https://secure.na1.adobesign.com/public/docs/restapi/v6#'
-                  'ParticipantSetInfopost_agreements',
-        default='IN_PROCESS'
+        default='DEMO_NOT_YET_SIGN'
     )
 
     def signature_documents(self):

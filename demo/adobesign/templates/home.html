@@ -24,6 +24,7 @@
 
 {% if signature_type.access_token %}
     <h3>Signatures</h3>
+    <p><a href="{% url 'signature' %}">Create signature</a></p>
     {% if errors %}
         <p style="color: red">ERRORS:: {{ errors }}</p>
         <p>-------------------------------------------</p>
@@ -52,7 +53,6 @@
             </li>
         {% endfor %}
     </ul>
-<p><a href="{% url 'signature' %}">Create signature</a></p>
 <p>-------------------------------------------</p>
 <h3>All Adobe agreements</h3>
 <ul>

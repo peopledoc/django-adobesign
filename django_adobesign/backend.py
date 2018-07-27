@@ -55,7 +55,6 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
             transient_document_id=transient_document_id,
             name=str(signature),
             participants=self.get_adobesign_participants(signature),
-            state=signature.state,
             post_sign_redirect_url=post_sign_redirect_url,
             post_sign_redirect_delay=post_sign_redirect_delay,
             send_mail=send_mail,
