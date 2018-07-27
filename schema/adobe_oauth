@@ -1,0 +1,30 @@
+
+hscale="2";
+
+client : "Client",
+adobe : "AdobeSign";
+
+
+adobe alt client: "Obtain Token" {
+---: New Token;
+client => adobe: "Get authorization URL (+ redirect_url, + application_id)";
+adobe >> client: "authoritation url";
+
+client => adobe: "Call authoritation_url";
+client alt adobe: "! Already logged in" {
+	client => adobe: "Login Process and Consent";
+};
+adobe >> client: "redirect_url (+ code)";
+
+client => adobe: "Get Token (+ application id, + application secret, + code)";
+adobe >> client: "acces_token + refresh_token";
+
+---: Refresh the Token;
+
+client => adobe: "Refresh Token (+ redirect_url, + application_id, + application secret)";
+adobe >> client: acces_token;
+};
+
+client box adobe: "Usage example";
+client => adobe: "Post Agreement (+ access_token)";
+adobe >> client: "agreement_id";
