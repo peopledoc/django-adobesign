@@ -1,0 +1,17 @@
+# Python files.
+*.pyc
+*.pyo
+*.egg-info
+
+# Tox files.
+/.tox/
+.pytest_cache/
+
+# Virtualenv files (created by tox).
+/build/
+/dist/
+
+# Données générées
+/var/
+!/var/.empty
+/demo/db.sqlite3

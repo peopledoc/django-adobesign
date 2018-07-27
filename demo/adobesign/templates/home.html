@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block head_title %}{{ block.super }}{% endblock %}
+{% block title %}Welcome to django-adobesign demo!{% endblock %}
+
+{% block content %}
+{% if signature_type %}
+    <h3>Settings</h3>
+    <p><b>root url</b>: {{ signature_type.root_url }}</p>
+    <p><b>application_id</b>: {{ signature_type.application_id }}</p>
+    <p><b>application_secret</b>: {{ signature_type.application_secret }}</p>
+    <a href="{% url 'update-settings' signature_type.pk %}">Change settings</a>
+    <p>-------------------------------------------</p>
+    <h3>Tokens</h3>
+    <p><b>access_token</b>: {{ signature_type.access_token }}</p>
+    <a href="{% url 'token' %}">Get token</a>
+    <br>
+    <a href="{% url 'refresh_token' %}">Refresh token</a>
+    <p>-------------------------------------------</p>
+{% else %}
+    <a href="{% url 'create-settings' %}">Create settings</a>
+    <p>-------------------------------------------</p>
+{% endif %}
+
+{% if signature_type.access_token %}
+    <h3>Signatures</h3>
+    <p><a href="{% url 'signature' %}">Create signature</a></p>
+    {% if errors %}
+        <p style="color: red">ERRORS:: {{ errors }}</p>
+        <p>-------------------------------------------</p>
+    {% endif %}
+    <ul>
+        {% for signature in latest_signatures %}
+            <li>{{ signature.document_title }} {{ signature.signature_backend_id }}
+                {% if not signature.signature_backend_id %}
+                    <a href="{% url 'sign' signature.pk %}">
+                        Commit signature
+                    </a>
+                {% endif %}
+                <ul>
+                    {% for signer in signature.signers %}
+                        <li>Signer : {{ signer.name }} ({{ signer.mail }} - adobe_id::{{ signer.adobe_id }})
+                            <p>order: {{ signer.order }} status : {{ signer.status }}
+                                {% if signer.url %}
+                                Sign :
+                                <a href="{{ signer.url }}">url link</a>
+
+                                {% endif %}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+<p>-------------------------------------------</p>
+<h3>All Adobe agreements</h3>
+<ul>
+    {% for agreement in agreements %}
+        {% for key, values in agreement.items %}
+            <li><b>{{ key }}</b>: {{ values}}</li>
+        {%endfor %}
+        <p>-------------------------------------------</p>
+    {%endfor %}
+</ul>
+{% endif %}
+{% endblock %}
