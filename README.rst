@@ -19,7 +19,7 @@ Run the demo
 
     OR
 
-    Developer account with watermark: got `Adobe developer account`_
+        Developer account with watermark: got `Adobe developer account`_
 
 
 .. _`Adobe developer account`: https://acrobat.adobe.com/us/en/sign/developer-form.html

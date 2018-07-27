@@ -40,7 +40,7 @@
                 <ul>
                     {% for signer in signature.signers %}
                         <li>Signer : {{ signer.name }} ({{ signer.mail }} - adobe_id::{{ signer.adobe_id }})
-                            <p>order: {{ signer.order }} status : {{ signer.status }} db_status:: {{ signer.current_status }}
+                            <p>order: {{ signer.order }} status : {{ signer.status }}
                                 {% if signer.url %}
                                 Sign :
                                 <a href="{{ signer.url }}">url link</a>
