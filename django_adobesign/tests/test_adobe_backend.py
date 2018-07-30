@@ -80,8 +80,8 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
 def test_get_next_signer_urls(mocker, adobe_sign_backend):
     mocker.patch.object(AdobeSignClient, 'get_signing_url',
                         side_effect=AdobeSignNoMoreSignerException('m', 'c'))
-    signers = adobe_sign_backend.get_next_signer_urls('12')
-    assert signers == {'signingUrlSetInfos': []}
+    with pytest.raises(AdobeSignNoMoreSignerException):
+        adobe_sign_backend.get_next_signer_urls('12')
 
 
 def test_get_next_signer_url(mocker, adobe_sign_backend):

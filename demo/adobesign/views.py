@@ -1,3 +1,5 @@
+import logging
+
 from adobesign.models import Signer
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, \
@@ -7,7 +9,8 @@ from time import sleep
 
 from django_adobesign.backend import AdobeSignBackend
 from django_adobesign.client import AdobeSignClient, AdobeSignOAuthSession
-from django_adobesign.exceptions import AdobeSignException
+from django_adobesign.exceptions import AdobeSignException, \
+    AdobeSignNoMoreSignerException
 from django_adobesign.views import SignerReturnView, SignerMixin
 from .models import Signature, SignatureType
 
@@ -59,6 +62,9 @@ class HomeView(TemplateView):
         for i in range(0, nb_try):
             try:
                 return backend.get_next_signer_url(signature_id)
+            except AdobeSignNoMoreSignerException as e:
+                logging.warning(e)
+                return None, None
             except AdobeSignException:
                 sleep(wait)
         return None, None
