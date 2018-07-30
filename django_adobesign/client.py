@@ -81,13 +81,13 @@ class AdobeSignClient(object):
     def upload_document(self, document):
         url = self.build_url(urlpath='transientDocuments')
         data = {
-            'File-Name': basename(document.file.name),
+            'File-Name': basename(document.name),
             'Mime-Type': 'application/pdf'
         }
         try:
             response = requests.post(url,
                                      headers=self.get_headers(),
-                                     files={'File': document},
+                                     files={'File': document.bytes},
                                      data=data)
             response.raise_for_status()
         except (requests.exceptions.RequestException, HTTPError) as e:

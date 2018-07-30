@@ -1,6 +1,4 @@
 import pytest
-from django.core.files import File
-from django.db.models import FileField
 from requests import Response
 
 from django_adobesign.client import AdobeSignOAuthSession, \
@@ -95,9 +93,9 @@ def test_should_get_jsonified_participant(adobe_sign_client,
 
 @pytest.fixture()
 def test_document(mocker):
-    document = mocker.Mock(FileField)
-    document.file = mocker.Mock(File)
-    document.file.name = '/tmp/test_document.pdf'
+    document = mocker.Mock()
+    document.name = '/tmp/test_document.pdf'
+    document.bytes = b''
     return document
 
 
@@ -115,7 +113,7 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
 
     kwargs_params = mocked_post.call_args[1]
     assert kwargs_params == {'headers': expected_headers,
-                             'files': {'File': test_document},
+                             'files': {'File': test_document.bytes},
                              'data': expected_data}
 
 
