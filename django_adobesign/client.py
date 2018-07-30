@@ -5,8 +5,7 @@ import requests
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
-from django_adobesign.exceptions import AdobeSignException, \
-    AdobeSignNoMoreSignerException
+from django_adobesign.exceptions import AdobeExceptionFactory
 
 ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
 ADOBE_OAUTH_REFRESH_TOKEN_URL = 'https://api.echosign.com/oauth/refresh'
@@ -54,6 +53,17 @@ class AdobeSignOAuthSession(object):
         return response
 
 
+def handle_adobe_exception(function):
+    def wrapper(*arg, **kwargs):
+
+        try:
+            return function(*arg, **kwargs)
+        except (requests.exceptions.RequestException, HTTPError) as e:
+            raise AdobeExceptionFactory.get_exception(e)
+
+    return wrapper
+
+
 class AdobeSignClient(object):
     '''
     AdobeSign client use v6 api.
@@ -78,21 +88,19 @@ class AdobeSignClient(object):
             header['x-on-behalf-of-user'] = self.on_behalf_of_user
         return header
 
+    @handle_adobe_exception
     def upload_document(self, document):
         url = self.build_url(urlpath='transientDocuments')
         data = {
             'File-Name': basename(document.name),
             'Mime-Type': 'application/pdf'
         }
-        try:
-            response = requests.post(url,
-                                     headers=self.get_headers(),
-                                     files={'File': document.bytes},
-                                     data=data)
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
 
+        response = requests.post(url,
+                                 headers=self.get_headers(),
+                                 files={'File': document.bytes},
+                                 data=data)
+        response.raise_for_status()
         return response.json()
 
     def jsonify_participant(self, name, email, order):
@@ -104,6 +112,7 @@ class AdobeSignClient(object):
             'role': 'SIGNER'
         }
 
+    @handle_adobe_exception
     def post_agreement(self, transient_document_id, name, participants,
                        post_sign_redirect_url, post_sign_redirect_delay,
                        send_mail, state='IN_PROCESS', **extra_data):
@@ -168,16 +177,13 @@ class AdobeSignClient(object):
             }
 
         data.update(extra_data)
-
-        try:
-            response = requests.post(url,
-                                     headers=self.get_headers(),
-                                     json=data)
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        response = requests.post(url,
+                                 headers=self.get_headers(),
+                                 json=data)
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_agreements(self, page_size, cursor=None, **extra_params):
         path_url = 'agreements'
         params = {'pageSize': page_size}
@@ -185,79 +191,55 @@ class AdobeSignClient(object):
             params['cursor'] = cursor
         params.update(extra_params)
         url = self.build_url(path_url)
-        try:
-            response = requests.get(url, headers=self.get_headers(),
-                                    params=params)
-            response.raise_for_status()
-        except(requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        response = requests.get(url, headers=self.get_headers(),
+                                params=params)
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_members(self, agreement_id, include_next_participant_set):
         url = self.build_url('agreements/{}/members'.format(agreement_id))
-        try:
-            params = {
-                'includeNextParticipantSet': include_next_participant_set}
-            response = requests.get(url,
-                                    params=params,
-                                    headers=self.get_headers())
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        params = {
+            'includeNextParticipantSet': include_next_participant_set}
+        response = requests.get(url,
+                                params=params,
+                                headers=self.get_headers())
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_signing_url(self, agreement_id):
         url = self.build_url('agreements/{}/signingUrls'.format(agreement_id))
-        try:
-            response = requests.get(url, headers=self.get_headers())
-            response.raise_for_status()
-        except HTTPError as e:
-            try:
-                json_data = e.response.json()
-            except Exception:
-                raise AdobeSignException(e)
-            error_reason = json_data.get('code')
-            if e.response.status_code == 404 and \
-                    error_reason in AdobeSignNoMoreSignerException.CODE_REASON:
-                message = '{} {}'.format(e, json_data.get('message'))
-                raise AdobeSignNoMoreSignerException(message, error_reason)
-            raise AdobeSignException(e)
-        except requests.exceptions.RequestException as e:
-            raise AdobeSignException(e)
+        response = requests.get(url, headers=self.get_headers())
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_signer(self, agreement_id, signer_id):
         url = self.build_url('agreements/{}/members/participantSets/{}'
                              .format(agreement_id, signer_id))
-        try:
-            response = requests.get(url, headers=self.get_headers())
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        response = requests.get(url, headers=self.get_headers())
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_documents(self, agreement_id, **extra_data):
         """
         Return all document ids for a given agreement id
         """
         url = self.build_url('agreements/{}/documents'.format(agreement_id))
-        try:
-            response = requests.get(url, headers=self.get_headers(),
-                                    data=extra_data)
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        response = requests.get(url, headers=self.get_headers(),
+                                data=extra_data)
+        response.raise_for_status()
         return response.json()
 
+    @handle_adobe_exception
     def get_document(self, agreement_id, document_id):
         """
         Download a document
         """
         url = self.build_url('agreements/{}/documents/{}'
                              .format(agreement_id, document_id))
-        try:
-            response = requests.get(url, headers=self.get_headers())
-            response.raise_for_status()
-        except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeSignException.to_adobe_exception(e)
+        response = requests.get(url, headers=self.get_headers())
+        response.raise_for_status()
         return response.content
