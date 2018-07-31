@@ -6,7 +6,7 @@ import requests
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
-from django_adobesign.exceptions import AdobeExceptionFactory
+from django_adobesign.exceptions import get_adobe_exception
 
 ADOBE_OAUTH_TOKEN_URL = 'https://api.echosign.com/oauth/token'
 ADOBE_OAUTH_REFRESH_TOKEN_URL = 'https://api.echosign.com/oauth/refresh'
@@ -60,7 +60,7 @@ def handle_adobe_exception(function):
         try:
             return function(*arg, **kwargs)
         except (requests.exceptions.RequestException, HTTPError) as e:
-            raise AdobeExceptionFactory.get_exception(e)
+            raise get_adobe_exception(e)
 
     return wrapper
 

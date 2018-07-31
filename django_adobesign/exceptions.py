@@ -1,33 +1,30 @@
 """Custom exceptions."""
 
 
-class AdobeExceptionFactory(object):
+def get_adobe_exception(exception):
+    status_code = exception.response.status_code
+    try:
+        json_data = exception.response.json()
+        reason = json_data['code']
+        content = json_data['message']
+        if AdobeSignNoMoreSignerException.is_no_more_signer(status_code,
+                                                            reason):
+            return AdobeSignNoMoreSignerException(content, reason,
+                                                  cause=exception)
 
-    @staticmethod
-    def get_exception(exception):
-        status_code = exception.response.status_code
+        if AdobeSignInvalidAccessTokenException.is_invalid_token(
+                status_code, reason):
+            return AdobeSignInvalidAccessTokenException(content,
+                                                        cause=exception)
+        message = '{} {} {}'.format(exception, reason, content)
+    except Exception:
         try:
-            json_data = exception.response.json()
-            reason = json_data['code']
-            content = json_data['message']
-            if AdobeSignNoMoreSignerException.is_no_more_signer(status_code,
-                                                                reason):
-                return AdobeSignNoMoreSignerException(content, reason,
-                                                      cause=exception)
-
-            if AdobeSignInvalidAccessTokenException.is_invalid_token(
-                    status_code, reason):
-                return AdobeSignInvalidAccessTokenException(content,
-                                                            cause=exception)
-            message = '{} {} {}'.format(exception, reason, content)
+            message = '{} {} {}'.format(exception,
+                                        status_code,
+                                        exception.response.body)
         except Exception:
-            try:
-                message = '{} {} {}'.format(exception,
-                                            status_code,
-                                            exception.response.body)
-            except Exception:
-                message = exception
-        return AdobeSignException(message, cause=exception)
+            message = exception
+    return AdobeSignException(message, cause=exception)
 
 
 class AdobeSignException(Exception):
