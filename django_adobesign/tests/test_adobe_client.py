@@ -4,7 +4,7 @@ from requests import Response
 from django_adobesign.client import AdobeSignOAuthSession, \
     ADOBE_OAUTH_TOKEN_URL, AdobeSignClient
 from django_adobesign.exceptions import AdobeSignException, \
-    AdobeSignNoMoreSignerException
+    AdobeSignNoMoreSignerException, AdobeSignInvalidAccessTokenException
 
 
 @pytest.fixture()
@@ -275,7 +275,8 @@ def test_get_signing_url_client_not_real_not_found_error(code_reason, mocker,
                                                          response_with_error,
                                                          adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(404))
-    mocker.patch('requests.Response.json', return_value={'code': code_reason})
+    mocker.patch('requests.Response.json',
+                 return_value={'code': code_reason, 'message': 'test'})
     with pytest.raises(AdobeSignNoMoreSignerException):
         adobe_sign_client.get_signing_url('id')
 
@@ -286,9 +287,9 @@ def test_get_signing_url_client_not_found_error(mocker,
     mocker.patch('requests.get', return_value=response_with_error(404))
     mocker.patch('requests.Response.json',
                  return_value={'code': 'REAL_NOT_FOUND'})
-    with pytest.raises(AdobeSignException) as e:
-        assert not isinstance(e, AdobeSignNoMoreSignerException)
+    with pytest.raises(AdobeSignException) as excinfo:
         adobe_sign_client.get_signing_url('id')
+    assert not excinfo.errisinstance(AdobeSignNoMoreSignerException)
 
 
 def test_get_signer(mocker, adobe_sign_client, expected_headers):
@@ -353,4 +354,27 @@ def test_get_document_client_or_server_error(error_code, mocker,
                                              adobe_sign_client):
     mocker.patch('requests.get', return_value=response_with_error(error_code))
     with pytest.raises(AdobeSignException):
+        adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+
+
+def test_do_not_change_exception_if_not_invalid_token(mocker,
+                                                      response_with_error,
+                                                      adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(401))
+    mocker.patch('requests.Response.json',
+                 return_value={'code': 'other Reason',
+                               'message': 'test'})
+    with pytest.raises(AdobeSignException) as excinfo:
+        adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+    assert not excinfo.errisinstance(AdobeSignInvalidAccessTokenException)
+
+
+def test_raise_invalid_token_exception(mocker,
+                                       response_with_error,
+                                       adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(401))
+    mocker.patch('requests.Response.json',
+                 return_value={'code': 'INVALID_ACCESS_TOKEN',
+                               'message': 'test'})
+    with pytest.raises(AdobeSignInvalidAccessTokenException):
         adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')

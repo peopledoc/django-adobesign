@@ -1,8 +1,4 @@
-import logging
-
 from django_anysign import api as django_anysign
-
-from django_adobesign.exceptions import AdobeSignNoMoreSignerException
 
 
 class AdobeSignBackend(django_anysign.SignatureBackend):
@@ -95,21 +91,18 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         """
             Return an array of urls for current signer set
         """
-        try:
-            return self.adobesign_client.get_signing_url(agreement_id)
-        except AdobeSignNoMoreSignerException as e:
-            logging.warning(e)
-            return {'signingUrlSetInfos': []}
+        return self.adobesign_client.get_signing_url(agreement_id)
 
     def get_next_signer_url(self, agreement_id):
         """
             Return the first next signer url and mail if exists
         """
         next_signers_url = self.get_next_signer_urls(agreement_id)
-        set_infos = next_signers_url['signingUrlSetInfos']
-        if set_infos and set_infos[0]['signingUrls']:
-            return set_infos[0]['signingUrls'][0]['email'], \
-                   set_infos[0]['signingUrls'][0]['esignUrl']
+        if 'signingUrlSetInfos' in next_signers_url:
+            set_infos = next_signers_url['signingUrlSetInfos']
+            if set_infos and set_infos[0]['signingUrls']:
+                return set_infos[0]['signingUrls'][0]['email'], \
+                       set_infos[0]['signingUrls'][0]['esignUrl']
         return None, None
 
     def get_all_signers(self, agreement_id):
