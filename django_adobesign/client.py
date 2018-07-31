@@ -1,3 +1,4 @@
+from functools import wraps
 from os import path
 from os.path import join, basename
 
@@ -54,8 +55,8 @@ class AdobeSignOAuthSession(object):
 
 
 def handle_adobe_exception(function):
+    @wraps(function)
     def wrapper(*arg, **kwargs):
-
         try:
             return function(*arg, **kwargs)
         except (requests.exceptions.RequestException, HTTPError) as e:
@@ -90,6 +91,9 @@ class AdobeSignClient(object):
 
     @handle_adobe_exception
     def upload_document(self, document):
+        """
+            Upload a document and get a transient document id
+        """
         url = self.build_url(urlpath='transientDocuments')
         data = {
             'File-Name': basename(document.name),
@@ -185,6 +189,9 @@ class AdobeSignClient(object):
 
     @handle_adobe_exception
     def get_agreements(self, page_size, cursor=None, **extra_params):
+        """
+        Return the list of agreements with pagination
+        """
         path_url = 'agreements'
         params = {'pageSize': page_size}
         if cursor:
@@ -198,6 +205,11 @@ class AdobeSignClient(object):
 
     @handle_adobe_exception
     def get_members(self, agreement_id, include_next_participant_set):
+        """
+        Return members of a given agreement id
+        :param include_next_participant_set: add to the response the set of
+        next participants
+        """
         url = self.build_url('agreements/{}/members'.format(agreement_id))
         params = {
             'includeNextParticipantSet': include_next_participant_set}
@@ -209,6 +221,10 @@ class AdobeSignClient(object):
 
     @handle_adobe_exception
     def get_signing_url(self, agreement_id):
+        """
+        Return the next signing url for the agreement
+        corresponding to the agreement_id.
+        """
         url = self.build_url('agreements/{}/signingUrls'.format(agreement_id))
         response = requests.get(url, headers=self.get_headers())
         response.raise_for_status()
@@ -216,6 +232,10 @@ class AdobeSignClient(object):
 
     @handle_adobe_exception
     def get_signer(self, agreement_id, signer_id):
+        """
+        Return the signer with the given signer_id who belongs to the agreement
+        corresponding to the agreement_id.
+        """
         url = self.build_url('agreements/{}/members/participantSets/{}'
                              .format(agreement_id, signer_id))
         response = requests.get(url, headers=self.get_headers())
