@@ -15,10 +15,7 @@ REQUIREMENTS = [
     'Django>=1.11,<2.1',
     'django-anysign>=1.2',
     'requests',
-    'requests_oauthlib',
-    'pytest-django',
-    'pytest-cov',
-    'pytest-mock'
+    'requests_oauthlib'
 ]
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
