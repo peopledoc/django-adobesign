@@ -10,6 +10,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            apt-get update && apt-get install -y python-dev && apt-get clean
             pip install tox
 
       - run:
