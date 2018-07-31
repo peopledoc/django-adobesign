@@ -69,6 +69,9 @@ class Signature(django_anysign.SignatureFactory(SignatureType)):
         Part of `django_anysign`'s API implementation.
 
         """
+        # For compliance with other signature backends
+        # Will be removed in major version
+        self.document.bytes = self.document
         yield self.document
 
     def __str__(self):
