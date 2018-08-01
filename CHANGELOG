@@ -8,7 +8,14 @@ about future releases, check `milestones`_ and :doc:`/about/vision`.
 0.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Improve Demo website UI
+
+BREAKING CHANGES:
+
+- Use django anysign field: signature_backend_id from signer
+- Enhance exceptions management
+- Use model imposed by third party (compliance) for document
+
 
 
 0.1 (2018-07-27)

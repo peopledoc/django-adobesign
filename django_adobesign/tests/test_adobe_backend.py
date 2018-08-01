@@ -8,11 +8,17 @@ from django_adobesign.client import AdobeSignClient
 from django_adobesign.exceptions import AdobeSignNoMoreSignerException
 
 
+class TestAdobeSignBackend(AdobeSignBackend):
+
+    def update_signer_status(self, signer, status):
+        pass
+
+
 @pytest.fixture()
 def adobe_sign_backend():
     adobe_sign_client = AdobeSignClient(root_url='http://fake',
                                         access_token='ThisIsAToken')
-    return AdobeSignBackend(adobe_sign_client)
+    return TestAdobeSignBackend(adobe_sign_client)
 
 
 @pytest.fixture()
@@ -70,11 +76,43 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
                         return_value={'transientDocumentId': 'doc_id'})
     mocker.patch.object(AdobeSignClient, 'post_agreement',
                         return_value={'id': 'test_agreement_id'})
+    mocker.patch.object(
+        AdobeSignClient, 'get_members',
+        return_value={
+            'participantSets': [
+                {'memberInfos': [{'email': 'pouet@plop.com'}],
+                 'id': 'fooid',
+                 'status': 'NOT_YET_VISIBLE',
+                 'order': 2},
+                {'memberInfos': [{'email': 'poney@plop.com'}],
+                 'id': 'barid',
+                 'status': 'CANCELLED',
+                 'order': 1}]})
 
-    assert minimal_signature.signature_backend_id == u''
+    # Signers
+    signer1 = Signer(full_name='Poney poney', email='poney@plop.com',
+                     signing_order=1)
+    signer2 = Signer(full_name='Pouet pouet', email='pouet@plop.com',
+                     signing_order=2)
+    signer2.signature = minimal_signature
+    signer1.signature = minimal_signature
+    signer2.save()
+    signer1.save()
+
+    assert signer1.signature_backend_id == ""
+    assert signer2.signature_backend_id == ""
+
+    assert minimal_signature.signature_backend_id == ""
 
     adobe_sign_backend.create_signature(minimal_signature)
+
+    minimal_signature.refresh_from_db()
     assert minimal_signature.signature_backend_id == 'test_agreement_id'
+
+    signer1.refresh_from_db()
+    signer2.refresh_from_db()
+    assert signer1.signature_backend_id == "barid"
+    assert signer2.signature_backend_id == "fooid"
 
 
 def test_get_next_signer_urls(mocker, adobe_sign_backend):

@@ -34,7 +34,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         agreement_id = self.signature.signature_backend_id
         signer = self.get_current_signer(agreement_id)
 
-        adobe_signer_id = self.get_signer_adobe_id(signer)
+        adobe_signer_id = signer.signature_backend_id
         status = self.backend.get_signer_status(agreement_id, adobe_signer_id)
 
         if status == 'CANCELLED':
@@ -109,9 +109,6 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             self._backend = self.signature.signature_backend
             return self._backend
 
-    def get_signer_adobe_id(self, signer):
-        raise NotImplementedError()
-
     def has_already_signed(self, signer):
         raise NotImplementedError()
 
@@ -138,20 +135,3 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
     def replace_document(self, signed_document):
         """Replace original document by signed one."""
         raise NotImplementedError()
-
-
-class SignerMixin(object):
-
-    def update_signer_with_adobe_data(self, signer, adobe_id, status):
-        raise NotImplementedError
-
-    def map_adobe_signer_to_signer(self, signature, backend):
-        # Can raise a Signer.DoesNotExist
-        for adobe_signer in backend.get_all_signers(
-                signature.signature_backend_id).get('participantSets', []):
-            # We only have 1 signer by turn
-            email = adobe_signer['memberInfos'][0]['email']
-            signer = signature.signers.get(signing_order=adobe_signer['order'],
-                                           email=email)
-            self.update_signer_with_adobe_data(signer, adobe_signer['id'],
-                                               adobe_signer['status'])

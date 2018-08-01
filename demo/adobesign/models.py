@@ -95,9 +95,3 @@ class Signer(django_anysign.SignerFactory(Signature)):
         db_index=True,
         default='NOT_YET_VISIBLE'
     )
-    adobe_id = models.CharField(
-        _('Internal adobe id'),
-        max_length=50,
-        db_index=True,
-        default=u''
-    )
