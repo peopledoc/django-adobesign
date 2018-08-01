@@ -53,6 +53,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             self.signer_signed(status, signer)
             return self.get_signer_signed_url(status)
 
+        self.update_signer(signer, status)
         return self.get_signer_error_url(status)
 
     def get_current_signer(self, agreement_id):
