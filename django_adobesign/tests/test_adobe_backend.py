@@ -8,7 +8,7 @@ from django_adobesign.client import AdobeSignClient
 from django_adobesign.exceptions import AdobeSignNoMoreSignerException
 
 
-class TestAdobeSignBackend(AdobeSignBackend):
+class AdobeSignBackendTest(AdobeSignBackend):
 
     def update_signer_status(self, signer, status):
         pass
@@ -18,7 +18,7 @@ class TestAdobeSignBackend(AdobeSignBackend):
 def adobe_sign_backend():
     adobe_sign_client = AdobeSignClient(root_url='http://fake',
                                         access_token='ThisIsAToken')
-    return TestAdobeSignBackend(adobe_sign_client)
+    return AdobeSignBackendTest(adobe_sign_client)
 
 
 @pytest.fixture()
