@@ -38,7 +38,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         status = self.backend.get_signer_status(agreement_id, adobe_signer_id)
 
         if status == 'CANCELLED':
-            self.update_signature(status)
+            self.signer_cancelled(signer, status)
             return self.get_signer_canceled_url(status)
 
         if status == 'COMPLETED':
@@ -73,10 +73,10 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         return next(
             self.backend.get_documents(self.signature.signature_backend_id))
 
-    def signer_cancel(self, message):
+    def signer_cancelled(self, signer,  status):
         """Handle 'Cancel' status for signer."""
-        self.update_signer(status='cancel', message=message)
-        self.update_signature(status='cancel')
+        self.update_signer(signer=signer, status=status)
+        self.update_signature(status=status)
 
     def signer_signed(self, status, signer):
         """ Update signer status after he sign
