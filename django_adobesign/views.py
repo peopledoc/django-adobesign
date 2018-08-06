@@ -31,12 +31,14 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             WAITING_FOR_MY_APPROVAL, WAITING_FOR_MY_FORM_FILLING
         """
 
+        signer = self.get_current_signer()
+        if not signer:
+            return self.get_signer_error_url('No more signer')
         agreement_id = self.signature.signature_backend_id
-        signer = self.get_current_signer(agreement_id)
-
         adobe_signer_id = signer.signature_backend_id
         status = self.backend.get_signer_status(agreement_id, adobe_signer_id)
-
+        if status == 'WAITING_FOR_MY_SIGNATURE':
+            return self.get_signer_error_url('User mismatch')
         if status == 'CANCELLED':
             self.signer_cancelled(signer, status)
             return self.get_signer_canceled_url(status)
@@ -54,15 +56,12 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             return self.get_signer_signed_url(status)
 
         self.update_signer(signer, status)
-        return self.get_signer_error_url(status)
+        return self.get_signer_error_url()
 
-    def get_current_signer(self, agreement_id):
+    def get_current_signer(self):
         for signer in self.signature.signers.all().order_by('signing_order'):
             if not self.has_already_signed(signer):
                 return signer
-        raise AdobeSignException(
-            'Can not find a current signer for agreement {}'.format(
-                agreement_id))
 
     def get_queryset(self):
         model = django_anysign.get_signature_model()
@@ -117,7 +116,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         """Url redirect when signer canceled signature."""
         raise NotImplementedError()
 
-    def get_signer_error_url(self, status):
+    def get_signer_error_url(self, message=''):
         """Url redirect when failure."""
         raise NotImplementedError()
 

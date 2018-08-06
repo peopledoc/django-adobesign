@@ -2,8 +2,8 @@
 
 
 def get_adobe_exception(exception):
-    status_code = exception.response.status_code
     try:
+        status_code = exception.response.status_code
         json_data = exception.response.json()
         reason = json_data['code']
         content = json_data['message']
