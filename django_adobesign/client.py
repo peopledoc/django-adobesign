@@ -265,3 +265,7 @@ class AdobeSignClient(object):
         response = requests.get(url, headers=self.get_headers())
         response.raise_for_status()
         return response.content
+
+    def rebuild_with_token(self, access_token):
+        return AdobeSignClient(self.root_url, access_token, self.api_user,
+                               self.on_behalf_of_user)
