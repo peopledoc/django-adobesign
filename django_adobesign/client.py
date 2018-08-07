@@ -43,11 +43,13 @@ class AdobeSignOAuthSession(object):
 
         return response
 
-    def refresh_token(self, refresh_token, application_secret):
-        response = self.oauth_session.refresh_token(
+    @staticmethod
+    def refresh_token(refresh_token, application_id, application_secret):
+        oauth_session = OAuth2Session(client_id=application_id)
+        response = oauth_session.refresh_token(
             ADOBE_OAUTH_REFRESH_TOKEN_URL,
             refresh_token=refresh_token,
-            client_id=self.application_id,
+            client_id=application_id,
             client_secret=application_secret,
             authorization_response="/")
 

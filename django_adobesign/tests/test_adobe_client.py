@@ -2,7 +2,7 @@ import pytest
 from requests import Response
 
 from django_adobesign.client import AdobeSignOAuthSession, \
-    ADOBE_OAUTH_TOKEN_URL, AdobeSignClient
+    ADOBE_OAUTH_TOKEN_URL, AdobeSignClient, ADOBE_OAUTH_REFRESH_TOKEN_URL
 from django_adobesign.exceptions import AdobeSignException, \
     AdobeSignNoMoreSignerException, AdobeSignInvalidAccessTokenException, \
     AdobeSignInvalidUserException
@@ -33,16 +33,28 @@ def test_oauth_get_scopes():
 
 
 def test_oauth_create(mocker, adobe_oauth_session):
-    mocker.patch.object(adobe_oauth_session.oauth_session, 'fetch_token')
+    mocked_function = mocker.patch.object(adobe_oauth_session.oauth_session,
+                                          'fetch_token')
     adobe_oauth_session.create_token('code_test', 'appli_secret_test')
-    mocked_function = adobe_oauth_session.oauth_session.fetch_token
-    mandatory_parameters = mocked_function.call_args[0]
-    assert mandatory_parameters == (ADOBE_OAUTH_TOKEN_URL,)
 
-    kwargs_params = mocked_function.call_args[1]
-    assert kwargs_params == {'code': 'code_test',
-                             'client_secret': 'appli_secret_test',
-                             'authorization_response': '/'}
+    assert mocked_function.mock_calls == [mocker.call(
+        ADOBE_OAUTH_TOKEN_URL,
+        code='code_test',
+        client_secret='appli_secret_test',
+        authorization_response='/')]
+
+
+def test_oauth_refresh_token(mocker):
+    mocked_function = mocker.patch(
+        "requests_oauthlib.OAuth2Session.refresh_token")
+    AdobeSignOAuthSession.refresh_token('refresh_token_test', 'appli_id_test',
+                                        'appli_secret_test')
+    assert mocked_function.mock_calls == [mocker.call(
+        ADOBE_OAUTH_REFRESH_TOKEN_URL,
+        refresh_token='refresh_token_test',
+        client_id='appli_id_test',
+        client_secret='appli_secret_test',
+        authorization_response='/')]
 
 
 @pytest.fixture()
