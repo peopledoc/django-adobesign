@@ -15,6 +15,7 @@ BREAKING CHANGES:
 - Use django anysign field: signature_backend_id from signer
 - Enhance exceptions management
 - Use model imposed by third party (compliance) for document
+- Make `refresh_token` a static method
 
 
 

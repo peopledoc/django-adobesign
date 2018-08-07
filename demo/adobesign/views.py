@@ -159,14 +159,10 @@ class TokenView(RedirectView):
 class RefreshTokenView(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         signature_type = SignatureType.objects.last()
-        redirect_uri = self.request.build_absolute_uri(reverse('token'))
-        adobesign_oauth_client = AdobeSignOAuthSession(
-            redirect_uri=redirect_uri,
-            application_id=signature_type.application_id,
-            account_type=ADOBESIGN_ACCOUNT_TYPE)
         # Refresh token
-        refresh_token_resp = adobesign_oauth_client.refresh_token(
+        refresh_token_resp = AdobeSignOAuthSession.refresh_token(
             signature_type.refresh_token,
+            signature_type.application_id,
             signature_type.application_secret)
         signature_type.access_token = refresh_token_resp.get('access_token')
         signature_type.refresh_token = refresh_token_resp.get('refresh_token')
