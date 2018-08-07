@@ -4,7 +4,8 @@ from requests import Response
 from django_adobesign.client import AdobeSignOAuthSession, \
     ADOBE_OAUTH_TOKEN_URL, AdobeSignClient
 from django_adobesign.exceptions import AdobeSignException, \
-    AdobeSignNoMoreSignerException, AdobeSignInvalidAccessTokenException
+    AdobeSignNoMoreSignerException, AdobeSignInvalidAccessTokenException, \
+    AdobeSignInvalidUserException
 
 
 @pytest.fixture()
@@ -377,4 +378,15 @@ def test_raise_invalid_token_exception(mocker,
                  return_value={'code': 'INVALID_ACCESS_TOKEN',
                                'message': 'test'})
     with pytest.raises(AdobeSignInvalidAccessTokenException):
+        adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+
+
+def test_raise_invalid_user_exception(mocker,
+                                      response_with_error,
+                                      adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(401))
+    mocker.patch('requests.Response.json',
+                 return_value={'code': 'INVALID_USER',
+                               'message': 'test'})
+    with pytest.raises(AdobeSignInvalidUserException):
         adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')

@@ -31,14 +31,16 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             WAITING_FOR_MY_APPROVAL, WAITING_FOR_MY_FORM_FILLING
         """
 
+        signer = self.get_current_signer()
+        if not signer:
+            return self.get_signer_error_url('No more signer')
         agreement_id = self.signature.signature_backend_id
-        signer = self.get_current_signer(agreement_id)
-
-        adobe_signer_id = self.get_signer_adobe_id(signer)
+        adobe_signer_id = signer.signature_backend_id
         status = self.backend.get_signer_status(agreement_id, adobe_signer_id)
-
+        if status == 'WAITING_FOR_MY_SIGNATURE':
+            return self.get_signer_error_url('User mismatch')
         if status == 'CANCELLED':
-            self.update_signature(status)
+            self.signer_cancelled(signer, status)
             return self.get_signer_canceled_url(status)
 
         if status == 'COMPLETED':
@@ -53,15 +55,13 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             self.signer_signed(status, signer)
             return self.get_signer_signed_url(status)
 
-        return self.get_signer_error_url(status)
+        self.update_signer(signer, status)
+        return self.get_signer_error_url()
 
-    def get_current_signer(self, agreement_id):
+    def get_current_signer(self):
         for signer in self.signature.signers.all().order_by('signing_order'):
             if not self.has_already_signed(signer):
                 return signer
-        raise AdobeSignException(
-            'Can not find a current signer for agreement {}'.format(
-                agreement_id))
 
     def get_queryset(self):
         model = django_anysign.get_signature_model()
@@ -72,10 +72,10 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         return next(
             self.backend.get_documents(self.signature.signature_backend_id))
 
-    def signer_cancel(self, message):
+    def signer_cancelled(self, signer,  status):
         """Handle 'Cancel' status for signer."""
-        self.update_signer(status='cancel', message=message)
-        self.update_signature(status='cancel')
+        self.update_signer(signer=signer, status=status)
+        self.update_signature(status=status)
 
     def signer_signed(self, status, signer):
         """ Update signer status after he sign
@@ -109,9 +109,6 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
             self._backend = self.signature.signature_backend
             return self._backend
 
-    def get_signer_adobe_id(self, signer):
-        raise NotImplementedError()
-
     def has_already_signed(self, signer):
         raise NotImplementedError()
 
@@ -119,7 +116,7 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
         """Url redirect when signer canceled signature."""
         raise NotImplementedError()
 
-    def get_signer_error_url(self, status):
+    def get_signer_error_url(self, message=''):
         """Url redirect when failure."""
         raise NotImplementedError()
 
@@ -138,20 +135,3 @@ class SignerReturnView(SingleObjectMixin, RedirectView):
     def replace_document(self, signed_document):
         """Replace original document by signed one."""
         raise NotImplementedError()
-
-
-class SignerMixin(object):
-
-    def update_signer_with_adobe_data(self, signer, adobe_id, status):
-        raise NotImplementedError
-
-    def map_adobe_signer_to_signer(self, signature, backend):
-        # Can raise a Signer.DoesNotExist
-        for adobe_signer in backend.get_all_signers(
-                signature.signature_backend_id).get('participantSets', []):
-            # We only have 1 signer by turn
-            email = adobe_signer['memberInfos'][0]['email']
-            signer = signature.signers.get(signing_order=adobe_signer['order'],
-                                           email=email)
-            self.update_signer_with_adobe_data(signer, adobe_signer['id'],
-                                               adobe_signer['status'])

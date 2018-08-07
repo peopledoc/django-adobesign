@@ -56,7 +56,7 @@
                 {% endif %}
                 <ul>
                     {% for signer in signature.signers %}
-                        <li>Signer: {{ signer.name }} ({{ signer.mail }} - adobe_id::{{ signer.adobe_id }})
+                        <li>Signer: {{ signer.name }} ({{ signer.mail }} - adobe_id::{{ signer.signature_backend_id }})
                             <p>order: {{ signer.order }} • status: {{ signer.status }}
                                 {% if signer.url %}
                                 Sign:

@@ -1,5 +1,6 @@
 import logging
 
+from adobesign.backend import DemoAdobeSignBackend
 from adobesign.models import Signer
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, \
@@ -7,11 +8,10 @@ from django.views.generic import TemplateView, CreateView, UpdateView, \
 from django.views.generic.detail import SingleObjectMixin
 from time import sleep
 
-from django_adobesign.backend import AdobeSignBackend
 from django_adobesign.client import AdobeSignClient, AdobeSignOAuthSession
-from django_adobesign.exceptions import AdobeSignException, \
-    AdobeSignNoMoreSignerException
-from django_adobesign.views import SignerReturnView, SignerMixin
+from django_adobesign.exceptions import AdobeSignException
+from django_adobesign.exceptions import AdobeSignNoMoreSignerException
+from django_adobesign.views import SignerReturnView
 from .models import Signature, SignatureType
 
 ADOBESIGN_ACCOUNT_TYPE = 'self'
@@ -23,7 +23,7 @@ def get_adobesign_backend(signature_type, api_user=None,
                                    access_token=signature_type.access_token,
                                    api_user=api_user,
                                    on_behalf_of_user=on_behalf_of_user)
-    return AdobeSignBackend(adobe_client)
+    return DemoAdobeSignBackend(adobe_client)
 
 
 class SettingsCreate(CreateView):
@@ -111,7 +111,7 @@ class HomeView(TemplateView):
                 db_signer = signature.signers.get(
                     signing_order=signer['order'], email=signer['mail'])
                 signer['current_status'] = db_signer.current_status
-                signer['adobe_id'] = db_signer.adobe_id
+                signer['signature_backend_id'] = db_signer.signature_backend_id
         return latest_signatures
 
     def get_context_data(self, **kwargs):
@@ -203,7 +203,7 @@ class CreateSigner(CreateView):
         return super(CreateSigner, self).get_form_kwargs()
 
 
-class Sign(RedirectView, SingleObjectMixin, SignerMixin):
+class Sign(RedirectView, SingleObjectMixin):
     model = Signature
 
     def get_redirect_url(self, *args, **kwargs):
@@ -214,14 +214,7 @@ class Sign(RedirectView, SingleObjectMixin, SignerMixin):
             signature=signature,
             post_sign_redirect_url=self.request.build_absolute_uri(
                 reverse('signed', kwargs={'pk': signature.pk})))
-
-        self.map_adobe_signer_to_signer(signature, backend)
         return reverse('home')
-
-    def update_signer_with_adobe_data(self, signer, adobe_id, status):
-        signer.adobe_id = adobe_id
-        signer.current_status = status
-        signer.save(update_fields=['adobe_id', 'current_status'])
 
 
 class DemoSignerReturnView(SignerReturnView):
@@ -250,6 +243,3 @@ class DemoSignerReturnView(SignerReturnView):
 
     def has_already_signed(self, signer):
         return signer.current_status in ('COMPLETED', 'WAITING_FOR_OTHERS')
-
-    def get_signer_adobe_id(self, signer):
-        return signer.adobe_id

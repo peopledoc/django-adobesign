@@ -2,8 +2,8 @@
 
 
 def get_adobe_exception(exception):
-    status_code = exception.response.status_code
     try:
+        status_code = exception.response.status_code
         json_data = exception.response.json()
         reason = json_data['code']
         content = json_data['message']
@@ -16,6 +16,9 @@ def get_adobe_exception(exception):
                 status_code, reason):
             return AdobeSignInvalidAccessTokenException(content,
                                                         cause=exception)
+        if AdobeSignInvalidUserException.is_invalid_user(status_code, reason):
+            return AdobeSignInvalidUserException(content, cause=exception)
+
         message = '{} {} {}'.format(exception, reason, content)
     except Exception:
         try:
@@ -58,4 +61,13 @@ class AdobeSignInvalidAccessTokenException(AdobeSignException):
 
     @staticmethod
     def is_invalid_token(status_code, reason):
-        return 'INVALID_ACCESS_TOKEN' in reason
+        return status_code == 401 and 'INVALID_ACCESS_TOKEN' in reason
+
+
+class AdobeSignInvalidUserException(AdobeSignException):
+    def __init__(self, message, cause=None):
+        super(AdobeSignInvalidUserException, self).__init__(message, cause)
+
+    @staticmethod
+    def is_invalid_user(status_code, reason):
+        return status_code == 401 and 'INVALID_USER' in reason
