@@ -21,6 +21,9 @@ help:
 #: develop - Install minimal development utilities.
 develop:
 	pip install tox
+	pip install pytest
+	pip install pytest-cov
+	pip install flake8
 	pip install -e . -e ./demo
 
 

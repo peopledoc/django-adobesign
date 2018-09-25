@@ -147,3 +147,24 @@ def test_is_last_signer(adobe_sign_backend, minimal_signature):
 
     assert not adobe_sign_backend.is_last_signer(signer1)
     assert adobe_sign_backend.is_last_signer(signer2)
+
+
+def test_get_refuse_comment(mocker, adobe_sign_backend):
+    data = {
+        "events": [
+            {
+                "type": "CREATED",
+            },
+            {
+                "type": "ACTION_REQUESTED",
+            },
+            {
+                "type": "REJECTED",
+                "comment": "test comment message"
+            }
+        ]
+    }
+    mocker.patch.object(AdobeSignClient, 'get_events',
+                        return_value=data)
+    comment = adobe_sign_backend.get_refuse_comment('12')
+    assert comment == "test comment message"
