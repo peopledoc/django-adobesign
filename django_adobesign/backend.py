@@ -72,7 +72,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         for adobe_signer in self.get_all_signers(
                 signature.signature_backend_id).get('participantSets', []):
             # We only have 1 signer by turn
-            email = adobe_signer['memberInfos'][0]['email']
+            email = adobe_signer['memberInfos'][0]['email'].lower()
             signer = signature.signers.get(signing_order=adobe_signer['order'],
                                            email=email)
             signer.signature_backend_id = adobe_signer['id']

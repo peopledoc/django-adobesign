@@ -9,6 +9,7 @@ about future releases, check `milestones`_ and :doc:`/about/vision`.
 ----------------
 
 - Add refuse comment backend method with the adobe events client method
+- Fix case sensitive from Adobe email field
 
 
 0.2 (2018-08-07)
