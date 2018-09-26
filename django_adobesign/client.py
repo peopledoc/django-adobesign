@@ -266,6 +266,16 @@ class AdobeSignClient(object):
         response.raise_for_status()
         return response.content
 
+    @handle_adobe_exception
+    def get_events(self, agreement_id):
+        """
+        Retrieves the events information for an agreement.
+        """
+        url = self.build_url('agreements/{}/events'.format(agreement_id))
+        response = requests.get(url, headers=self.get_headers())
+        response.raise_for_status()
+        return response.json()
+
     def rebuild_with_token(self, access_token):
         return AdobeSignClient(self.root_url, access_token, self.api_user,
                                self.on_behalf_of_user)

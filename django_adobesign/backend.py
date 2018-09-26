@@ -97,7 +97,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         """
         agreements = self.adobesign_client.get_agreements(page_size, cursor,
                                                           **extra_params)
-        return agreements or {'userAgreementList': []}
+        return agreements or {'userAgreementList': [], 'page': {}}
 
     def get_next_signers(self, agreement_id):
         """ Return the next signer list."""
@@ -149,3 +149,13 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         for doc_info in documents_info.get('documents', []):
             yield self.adobesign_client.get_document(agreement_id,
                                                      doc_info['id'])
+
+    def get_refuse_comment(self, agreement_id):
+        """
+        Return the refuse comment from agreement
+        """
+        events = self.adobesign_client.get_events(agreement_id)
+        for event in events.get('events'):
+            if event.get('type') == "REJECTED":
+                # comment is mandatory
+                return event["comment"]

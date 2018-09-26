@@ -370,6 +370,27 @@ def test_get_document_client_or_server_error(error_code, mocker,
         adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
 
 
+def test_get_events(mocker, adobe_sign_client, expected_headers):
+    mocked_get = mocker.patch('requests.get')
+    adobe_sign_client.get_events('test_agreement_id')
+
+    mandatory_parameters = mocked_get.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/agreements/'
+                                    'test_agreement_id/events',)
+
+    kwargs_parameters = mocked_get.call_args[1]
+    assert kwargs_parameters == {'headers': expected_headers}
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_get_events_client_or_server_error(error_code, mocker,
+                                           response_with_error,
+                                           adobe_sign_client):
+    mocker.patch('requests.get', return_value=response_with_error(error_code))
+    with pytest.raises(AdobeSignException):
+        adobe_sign_client.get_events('test_agreement_id')
+
+
 def test_do_not_change_exception_if_not_invalid_token(mocker,
                                                       response_with_error,
                                                       adobe_sign_client):
