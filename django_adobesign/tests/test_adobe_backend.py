@@ -80,7 +80,8 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
         AdobeSignClient, 'get_members',
         return_value={
             'participantSets': [
-                {'memberInfos': [{'email': 'pouet@plop.com'}],
+                # Check email are case sensitive case (only side Adobe)
+                {'memberInfos': [{'email': 'PoUeT@plop.com'}],
                  'id': 'fooid',
                  'status': 'NOT_YET_VISIBLE',
                  'order': 2},
