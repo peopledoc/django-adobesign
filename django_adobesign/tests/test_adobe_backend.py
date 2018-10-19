@@ -118,7 +118,8 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
 
 def test_get_next_signer_urls(mocker, adobe_sign_backend):
     mocker.patch.object(AdobeSignClient, 'get_signing_url',
-                        side_effect=AdobeSignNoMoreSignerException('m', 'c'))
+                        side_effect=AdobeSignNoMoreSignerException(
+                            'm', Exception('c')))
     with pytest.raises(AdobeSignNoMoreSignerException):
         adobe_sign_backend.get_next_signer_urls('12')
 
