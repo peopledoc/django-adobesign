@@ -190,6 +190,19 @@ class AdobeSignClient(object):
         return response.json()
 
     @handle_adobe_exception
+    def put_agreement(self, agreement_id, **data):
+        '''
+        Update signature
+        '''
+        url = self.build_url(urlpath='agreements')
+
+        response = requests.put(url,
+                                headers=self.get_headers(),
+                                json=data)
+        response.raise_for_status()
+        return response.json()
+
+    @handle_adobe_exception
     def get_agreements(self, page_size, cursor=None, **extra_params):
         """
         Return the list of agreements with pagination

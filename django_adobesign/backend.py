@@ -64,6 +64,13 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         self.map_adobe_signer_to_signer(signature)
         return signature
 
+    def update_signature(self, signature, **data):
+        """
+        Update the agreement through the API
+        """
+        self.adobesign_client.put_agreement(
+            signature.signature_backend_id, **data)
+
     def update_signer_status(self, signer, status):
         raise NotImplementedError()
 
