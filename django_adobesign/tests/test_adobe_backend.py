@@ -8,17 +8,11 @@ from django_adobesign.client import AdobeSignClient
 from django_adobesign.exceptions import AdobeSignNoMoreSignerException
 
 
-class AdobeSignBackendTest(AdobeSignBackend):
-
-    def update_signer_status(self, signer, status):
-        pass
-
-
 @pytest.fixture()
 def adobe_sign_backend():
     adobe_sign_client = AdobeSignClient(root_url='http://fake',
                                         access_token='ThisIsAToken')
-    return AdobeSignBackendTest(adobe_sign_client)
+    return AdobeSignBackend(adobe_sign_client)
 
 
 @pytest.fixture()
@@ -170,3 +164,51 @@ def test_get_refuse_comment(mocker, adobe_sign_backend):
                         return_value=data)
     comment = adobe_sign_backend.get_refuse_comment('12')
     assert comment == "test comment message"
+
+
+@pytest.mark.django_db
+def test_map_adobe_signer_to_signer(mocker, adobe_sign_backend,
+                                    minimal_signature):
+    # Check signer with same email are good mapped with the order
+    signer1 = Signer(full_name='Poney poney', email='poney@plop.com',
+                     signing_order=1)
+    signer2 = Signer(full_name='Pouet pouet', email='poney@plop.com',
+                     signing_order=2)
+    signer3 = Signer(full_name='Pouet pouet', email='poney@plop.com',
+                     signing_order=3)
+    signer3.signature = minimal_signature
+    signer2.signature = minimal_signature
+    signer1.signature = minimal_signature
+    signer3.save()
+    signer2.save()
+    signer1.save()
+
+    mocker.patch.object(
+        AdobeSignClient, 'get_members',
+        return_value={
+            'participantSets': [
+                # Check email are case sensitive case (only side Adobe)
+                {'memberInfos': [{'email': 'poney@plop.com'}],
+                 'id': 'foo2',
+                 'status': 'NOT_YET_VISIBLE',
+                 'order': 2},
+                {'memberInfos': [{'email': 'poney@plop.com'}],
+                 'id': 'foo1',
+                 'status': 'CANCELLED',
+                 'order': 1},
+                {'memberInfos': [{'email': 'poney@plop.com'}],
+                 'id': 'foo3',
+                 'status': 'CANCELLED',
+                 'order': 3}]})
+
+    adobe_sign_backend.map_adobe_signer_to_signer(minimal_signature)
+    signer1.refresh_from_db()
+    signer2.refresh_from_db()
+    signer3.refresh_from_db()
+    assert signer1.signature_backend_id == "foo1"
+    assert signer2.signature_backend_id == "foo2"
+    assert signer3.signature_backend_id == "foo3"
+    # No status change
+    assert signer1.current_status == "NOT_YET_VISIBLE"
+    assert signer2.current_status == "NOT_YET_VISIBLE"
+    assert signer3.current_status == "NOT_YET_VISIBLE"

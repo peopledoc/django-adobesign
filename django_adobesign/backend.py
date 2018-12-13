@@ -64,20 +64,18 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         self.map_adobe_signer_to_signer(signature)
         return signature
 
-    def update_signer_status(self, signer, status):
-        raise NotImplementedError()
-
     def map_adobe_signer_to_signer(self, signature):
-        # Can raise a Signer.DoesNotExist
+        signers = {(signer.email, signer.signing_order): signer
+                   for signer in signature.signers.all()}
         for adobe_signer in self.get_all_signers(
                 signature.signature_backend_id).get('participantSets', []):
-            # We only have 1 signer by turn
-            email = adobe_signer['memberInfos'][0]['email'].lower()
-            signer = signature.signers.get(signing_order=adobe_signer['order'],
-                                           email=email)
+            # retrieve the right adobe signer by email and order values
+            # Can raise a KeyError if signer does not exist
+            signer = signers[
+                (adobe_signer['memberInfos'][0]['email'].lower(),
+                 adobe_signer['order'])]
             signer.signature_backend_id = adobe_signer['id']
             signer.save(update_fields=['signature_backend_id'])
-            self.update_signer_status(signer, adobe_signer['status'])
 
     def get_agreements(self, page_size=20, cursor=None, **extra_params):
         """

@@ -8,7 +8,7 @@ about future releases, check `milestones`_ and :doc:`/about/vision`.
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Remove useless state mapping during signature creation
 
 
 0.4 (2018-10-19)
