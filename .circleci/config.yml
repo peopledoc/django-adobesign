@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  lint:
     docker:
       - image: python:3.6
 
@@ -16,4 +16,54 @@ jobs:
       - run:
           name: run tests
           command: |
-            make test-all
+            tox -e flake8 -vv
+            tox -e readme -vv
+
+  test-python36:
+    docker:
+      - image: python:3.6
+
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            apt-get update && apt-get install -y python-dev && apt-get clean
+            pip install tox
+
+      - run:
+          name: run tests
+          command: |
+            tox -e "py{27,35,36}-django{111}"
+            tox -e "py{35,36}-django{20,21}"
+
+  test-python37:
+    docker:
+      - image: python:3.7
+
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            apt-get update && apt-get install -y python-dev && apt-get clean
+            pip install tox
+
+      - run:
+          name: run tests
+          command: |
+            tox -e "py37-django{20,21}"
+
+workflows:
+  default:
+    jobs:
+      - lint
+      - test-python36:
+          requires:
+            - lint
+      - test-python37:
+          requires:
+            - lint
+  version: 2
