@@ -15,7 +15,9 @@ REQUIREMENTS = [
     'Django>=1.11,<2.1',
     'django-anysign>=1.2',
     'requests',
-    'requests_oauthlib'
+    # v1.2.0 introduce OAuthlib 3.0.0 seems to be not compatible with Adobe
+    # oauth server
+    'requests_oauthlib<1.2.0'
 ]
 
 if __name__ == '__main__':  # Do not run setup() when we import this module.
