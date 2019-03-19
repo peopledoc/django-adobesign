@@ -12,7 +12,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 VERSION = open(os.path.join(here, 'VERSION')).read().strip()
 
 REQUIREMENTS = [
-    'Django>=1.11,<2.1',
+    'Django>=1.11,<2.2',
     'django-anysign>=1.2',
     'requests',
     # v1.2.0 introduce OAuthlib 3.0.0 seems to be not compatible with Adobe
@@ -32,10 +32,12 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
             'Framework :: Django',
             'Framework :: Django :: 1.11',
             'Framework :: Django :: 2.0',
+            'Framework :: Django :: 2.1',
             "Programming Language :: Python :: 2",
             "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
         ],
         keywords='peopledoc anysign adobesign',
         author='Peopledoc',
