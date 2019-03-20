@@ -8,7 +8,9 @@ about future releases, check `milestones`_ and :doc:`/about/vision`.
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Confirm compatibility with Django 2.1 & Python 3.7.
+- Limit the version of the requests_oauthlib to not use OAuthlib 3.0.0 to adapt
+  to the Adobe oauth server.
 
 
 0.5 (2018-12-18)
