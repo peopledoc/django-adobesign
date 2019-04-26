@@ -5,7 +5,7 @@ This document describes changes between each past release. For information
 about future releases, check `milestones`_ and :doc:`/about/vision`.
 
 
-0.7 (unreleased)
+0.7 (2019-04-26)
 ----------------
 
 - Confirm compatibility with Django 2.2
