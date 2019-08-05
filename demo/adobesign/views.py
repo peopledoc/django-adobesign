@@ -19,7 +19,7 @@ ADOBESIGN_ACCOUNT_TYPE = 'self'
 
 def get_adobesign_backend(signature_type, api_user=None,
                           on_behalf_of_user=None):
-    adobe_client = AdobeSignClient(root_url=signature_type.root_url,
+    adobe_client = AdobeSignClient(root_url=signature_type.api_root_url,
                                    access_token=signature_type.access_token,
                                    api_user=api_user,
                                    on_behalf_of_user=on_behalf_of_user)
@@ -28,7 +28,7 @@ def get_adobesign_backend(signature_type, api_user=None,
 
 class SettingsCreate(CreateView):
     model = SignatureType
-    fields = ['root_url', 'application_id', 'application_secret']
+    fields = ['web_root_url', 'application_id', 'application_secret']
     success_url = "/"
 
     def form_valid(self, form):
@@ -40,7 +40,7 @@ class SettingsCreate(CreateView):
 
 class SettingsUpdate(UpdateView):
     model = SignatureType
-    fields = ['root_url', 'application_id', 'application_secret']
+    fields = ['web_root_url', 'application_id', 'application_secret']
     success_url = "/"
 
 
@@ -146,12 +146,14 @@ class TokenView(RedirectView):
         # Redirect user to AdobeSign authorization
         if not code:
             return adobesign_oauth_client.get_authorization_url(
-                signature_type.root_url)
+                signature_type.web_root_url)
         # Create token
+
         token_response = adobesign_oauth_client.create_token(
             code, signature_type.application_secret)
         signature_type.access_token = token_response.get('access_token')
         signature_type.refresh_token = token_response.get('refresh_token')
+        signature_type.api_root_url = self.request.GET.get('api_access_point')
         signature_type.save()
         return reverse('home')
 

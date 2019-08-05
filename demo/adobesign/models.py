@@ -7,10 +7,18 @@ from django_adobesign.client import AdobeSignClient
 
 
 class SignatureType(django_anysign.SignatureType):
-    root_url = models.CharField(
-        _('AdobeSign root url'),
+
+    web_root_url = models.CharField(
+        _('AdobeSign web root url (on the shard where your oauth app '
+          'is defined)'),
         max_length=255,
-        default=settings.ADOBESIGN_ROOT_URL)
+        default=settings.ADOBESIGN_WEB_ROOT_URL)
+
+    api_root_url = models.CharField(
+        _('AdobeSign region-specific api root url (will be filled from '
+          'the API)'),
+        max_length=255,
+        blank=True)
 
     application_id = models.CharField(
         _('AdobeSign application id'),
@@ -43,7 +51,7 @@ class SignatureType(django_anysign.SignatureType):
     @property
     def signature_backend_options(self):
         return {
-            'adobesign_client': AdobeSignClient(self.root_url,
+            'adobesign_client': AdobeSignClient(self.api_root_url,
                                                 self.access_token)
         }
 
