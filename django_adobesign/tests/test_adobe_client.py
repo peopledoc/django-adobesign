@@ -205,8 +205,8 @@ def test_post_agreement_client_or_server_error(error_code, mocker,
     mocker.patch('requests.post', return_value=response)
     with pytest.raises(AdobeSignException) as e:
         adobe_sign_client.post_agreement('doc id', 'name', [], '-', '-', False)
-    assert expected_json_reply_error['code'] in str(e)
-    assert expected_json_reply_error['message'] in str(e)
+    assert expected_json_reply_error['code'] in str(e.value)
+    assert expected_json_reply_error['message'] in str(e.value)
 
 
 def test_get_agreements(mocker, adobe_sign_client, expected_headers):
