@@ -119,8 +119,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-ADOBESIGN_ROOT_URL = os.environ.get('ADOBESIGN_ROOT_URL',
-                                    'https://secure.eu1.echosign.com')
+# This should point to the region where the Adobe Sign OAuth app is defined
+ADOBESIGN_WEB_ROOT_URL = os.environ.get('ADOBESIGN_WEB_ROOT_URL',
+                                        'https://secure.eu1.echosign.com')
 
 ANYSIGN = {
     'BACKENDS': {
