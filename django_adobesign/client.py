@@ -245,6 +245,19 @@ class AdobeSignClient(object):
         return response.json()
 
     @handle_adobe_exception
+    def update_signer(self, agreement_id, signer_id, participant):
+        """
+        Update and return the signer with the given signer_id who belongs to
+        the agreement corresponding to the agreement_id.
+        """
+        url = self.build_url('agreements/{}/members/participantSets/{}'
+                             .format(agreement_id, signer_id))
+        response = requests.put(
+            url, headers=self.get_headers(), json=participant
+        )
+        response.raise_for_status()
+
+    @handle_adobe_exception
     def get_documents(self, agreement_id, **extra_data):
         """
         Return all document ids for a given agreement id

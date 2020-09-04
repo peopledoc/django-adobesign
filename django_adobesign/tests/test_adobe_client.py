@@ -423,3 +423,45 @@ def test_raise_invalid_user_exception(mocker,
                                'message': 'test'})
     with pytest.raises(AdobeSignInvalidUserException):
         adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+
+
+def test_update_signer(mocker, adobe_sign_client, expected_headers):
+    mocked_put = mocker.patch("requests.put")
+
+    adobe_sign_client.update_signer(
+        agreement_id="42", signer_id="24", participant={"name": "foo"}
+    )
+
+    mandatory_parameters = mocked_put.call_args[0]
+    assert mandatory_parameters == (
+        "http://test/api/rest/v6/agreements/42/members/participantSets/24",
+    )
+
+    kwargs_params = mocked_put.call_args[1]
+    assert kwargs_params == {
+        "headers": expected_headers,
+        "json": {"name": "foo"},
+    }
+
+
+@pytest.mark.parametrize('error_code', (404, 500))
+def test_update_signer_client_or_server_error(
+    error_code, mocker, response_with_error, adobe_sign_client
+):
+    expected_json_reply_error = {
+        'code': str(error_code),
+        'message': 'error raison'
+    }
+    response = response_with_error(error_code)
+    mocker.patch.object(
+        response, 'json', return_value=expected_json_reply_error
+    )
+    mocker.patch('requests.put', return_value=response)
+
+    with pytest.raises(AdobeSignException) as e:
+        adobe_sign_client.update_signer(
+            agreement_id="42", signer_id="24", participant={"name": "foo"}
+        )
+
+    assert expected_json_reply_error['code'] in str(e.value)
+    assert expected_json_reply_error['message'] in str(e.value)
