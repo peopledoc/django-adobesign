@@ -8,7 +8,8 @@ about future releases, check `milestones`_ and :doc:`/about/vision`.
 0.8 (unreleased)
 ----------------
 
-Nothing so far
+- Add the possibility to update a signer
+- Make the demo able to dynamically select the correct api root url
 
 
 0.7 (2019-04-26)
