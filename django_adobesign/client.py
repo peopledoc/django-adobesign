@@ -74,11 +74,12 @@ class AdobeSignClient(object):
     '''
 
     def __init__(self, root_url, access_token, api_user=None,
-                 on_behalf_of_user=None):
+                 on_behalf_of_user=None, timeout=15):
         self.root_url = root_url.strip('/')
         self.access_token = access_token
         self.on_behalf_of_user = on_behalf_of_user
         self.api_user = api_user
+        self.timeout = timeout
 
     def build_url(self, urlpath):
         return path.join(self.root_url, 'api/rest/v6', urlpath)
@@ -102,10 +103,13 @@ class AdobeSignClient(object):
             'Mime-Type': 'application/pdf'
         }
 
-        response = requests.post(url,
-                                 headers=self.get_headers(),
-                                 files={'File': document.bytes},
-                                 data=data)
+        response = requests.post(
+            url,
+            headers=self.get_headers(),
+            files={'File': document.bytes},
+            data=data,
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -183,9 +187,12 @@ class AdobeSignClient(object):
             }
 
         data.update(extra_data)
-        response = requests.post(url,
-                                 headers=self.get_headers(),
-                                 json=data)
+        response = requests.post(
+            url,
+            headers=self.get_headers(),
+            json=data,
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -200,8 +207,12 @@ class AdobeSignClient(object):
             params['cursor'] = cursor
         params.update(extra_params)
         url = self.build_url(path_url)
-        response = requests.get(url, headers=self.get_headers(),
-                                params=params)
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            params=params,
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -215,9 +226,12 @@ class AdobeSignClient(object):
         url = self.build_url('agreements/{}/members'.format(agreement_id))
         params = {
             'includeNextParticipantSet': include_next_participant_set}
-        response = requests.get(url,
-                                params=params,
-                                headers=self.get_headers())
+        response = requests.get(
+            url,
+            params=params,
+            headers=self.get_headers(),
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -228,7 +242,11 @@ class AdobeSignClient(object):
         corresponding to the agreement_id.
         """
         url = self.build_url('agreements/{}/signingUrls'.format(agreement_id))
-        response = requests.get(url, headers=self.get_headers())
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -240,7 +258,11 @@ class AdobeSignClient(object):
         """
         url = self.build_url('agreements/{}/members/participantSets/{}'
                              .format(agreement_id, signer_id))
-        response = requests.get(url, headers=self.get_headers())
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -253,7 +275,10 @@ class AdobeSignClient(object):
         url = self.build_url('agreements/{}/members/participantSets/{}'
                              .format(agreement_id, signer_id))
         response = requests.put(
-            url, headers=self.get_headers(), json=participant
+            url,
+            headers=self.get_headers(),
+            json=participant,
+            timeout=self.timeout
         )
         response.raise_for_status()
 
@@ -263,8 +288,12 @@ class AdobeSignClient(object):
         Return all document ids for a given agreement id
         """
         url = self.build_url('agreements/{}/documents'.format(agreement_id))
-        response = requests.get(url, headers=self.get_headers(),
-                                data=extra_data)
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            data=extra_data,
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 
@@ -275,7 +304,11 @@ class AdobeSignClient(object):
         """
         url = self.build_url('agreements/{}/documents/{}'
                              .format(agreement_id, document_id))
-        response = requests.get(url, headers=self.get_headers())
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.content
 
@@ -285,7 +318,11 @@ class AdobeSignClient(object):
         Retrieves the events information for an agreement.
         """
         url = self.build_url('agreements/{}/events'.format(agreement_id))
-        response = requests.get(url, headers=self.get_headers())
+        response = requests.get(
+            url,
+            headers=self.get_headers(),
+            timeout=self.timeout
+        )
         response.raise_for_status()
         return response.json()
 

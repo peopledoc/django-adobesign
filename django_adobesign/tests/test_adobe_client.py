@@ -125,9 +125,12 @@ def test_call_upload_document(mocker, adobe_sign_client, expected_headers,
         'http://test/api/rest/v6/transientDocuments',)
 
     kwargs_params = mocked_post.call_args[1]
-    assert kwargs_params == {'headers': expected_headers,
-                             'files': {'File': test_document.bytes},
-                             'data': expected_data}
+    assert kwargs_params == {
+        'headers': expected_headers,
+        'files': {'File': test_document.bytes},
+        'data': expected_data,
+        'timeout': 15
+    }
 
 
 @pytest.fixture()
@@ -189,8 +192,11 @@ def test_should_create_signature(mocker, adobe_sign_client,
     assert mandatory_parameters == ('http://test/api/rest/v6/agreements',)
 
     kwargs_params = mocked_post.call_args[1]
-    assert kwargs_params == {'headers': expected_headers,
-                             'json': expected_json}
+    assert kwargs_params == {
+        'headers': expected_headers,
+        'json': expected_json,
+        'timeout': 15
+    }
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -221,8 +227,11 @@ def test_get_agreements(mocker, adobe_sign_client, expected_headers):
     assert mandatory_parameters == ('http://test/api/rest/v6/agreements',)
 
     kwargs_params = mocked_get.call_args[1]
-    assert kwargs_params == {'headers': expected_headers,
-                             'params': expected_params}
+    assert kwargs_params == {
+        'headers': expected_headers,
+        'params': expected_params,
+        'timeout': 15
+    }
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -248,7 +257,9 @@ def test_get_members(include_next_participant_set, mocker, adobe_sign_client,
     kwargs_params = mocked_get.call_args[1]
     assert kwargs_params == {
         'params': {'includeNextParticipantSet': include_next_participant_set},
-        'headers': expected_headers}
+        'headers': expected_headers,
+        'timeout': 15
+    }
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -269,7 +280,7 @@ def test_get_signing_url(mocker, adobe_sign_client, expected_headers):
         'http://test/api/rest/v6/agreements/test_agreement_id/signingUrls',)
 
     kwargs_parameters = mocked_get.call_args[1]
-    assert kwargs_parameters == {'headers': expected_headers}
+    assert kwargs_parameters == {'headers': expected_headers, 'timeout': 15}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -315,7 +326,7 @@ def test_get_signer(mocker, adobe_sign_client, expected_headers):
     assert mandatory_parameters == (expected_url,)
 
     kwargs_parameters = mocked_get.call_args[1]
-    assert kwargs_parameters == {'headers': expected_headers}
+    assert kwargs_parameters == {'headers': expected_headers, 'timeout': 15}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -336,8 +347,11 @@ def test_get_documents(mocker, adobe_sign_client, expected_headers):
                                     'test_agreement_id/documents',)
 
     kwargs_parameters = mocked_get.call_args[1]
-    assert kwargs_parameters == {'headers': expected_headers,
-                                 'data': {'test_data': {'a': 2}}}
+    assert kwargs_parameters == {
+        'headers': expected_headers,
+        'data': {'test_data': {'a': 2}},
+        'timeout': 15
+    }
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -358,7 +372,7 @@ def test_get_document(mocker, adobe_sign_client, expected_headers):
                                     'test_agreement_id/documents/test_doc_id',)
 
     kwargs_parameters = mocked_get.call_args[1]
-    assert kwargs_parameters == {'headers': expected_headers}
+    assert kwargs_parameters == {'headers': expected_headers, 'timeout': 15}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -379,7 +393,7 @@ def test_get_events(mocker, adobe_sign_client, expected_headers):
                                     'test_agreement_id/events',)
 
     kwargs_parameters = mocked_get.call_args[1]
-    assert kwargs_parameters == {'headers': expected_headers}
+    assert kwargs_parameters == {'headers': expected_headers, 'timeout': 15}
 
 
 @pytest.mark.parametrize('error_code', (404, 500))
@@ -441,6 +455,7 @@ def test_update_signer(mocker, adobe_sign_client, expected_headers):
     assert kwargs_params == {
         "headers": expected_headers,
         "json": {"name": "foo"},
+        'timeout': 15
     }
 
 
