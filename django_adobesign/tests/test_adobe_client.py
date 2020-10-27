@@ -5,7 +5,7 @@ from django_adobesign.client import AdobeSignOAuthSession, \
     ADOBE_OAUTH_TOKEN_URL, AdobeSignClient, ADOBE_OAUTH_REFRESH_TOKEN_URL
 from django_adobesign.exceptions import AdobeSignException, \
     AdobeSignNoMoreSignerException, AdobeSignInvalidAccessTokenException, \
-    AdobeSignInvalidUserException
+    AdobeSignInvalidUserException, AdobeSignMaxApiRateLimitException
 
 
 @pytest.fixture()
@@ -437,6 +437,26 @@ def test_raise_invalid_user_exception(mocker,
                                'message': 'test'})
     with pytest.raises(AdobeSignInvalidUserException):
         adobe_sign_client.get_document('test_agreement_id', 'test_doc_id')
+
+
+def test_raise_max_api_rate_limit_exception(
+        mocker,
+        response_with_error,
+        adobe_sign_client
+):
+    mocker.patch('requests.get', return_value=response_with_error(429))
+    mocker.patch(
+        'requests.Response.json',
+        return_value={
+            'code': 'THROTTLING_TOO_MANY_REQUESTS',
+            'message': 'max rate limit',
+            'retryAfter': 2500
+        })
+    with pytest.raises(AdobeSignMaxApiRateLimitException) as test_exc:
+        adobe_sign_client.get_agreements(page_size=20)
+
+    assert (test_exc.value.reason == 'THROTTLING_TOO_MANY_REQUESTS')
+    assert (test_exc.value.retry_after == 2500)
 
 
 def test_update_signer(mocker, adobe_sign_client, expected_headers):

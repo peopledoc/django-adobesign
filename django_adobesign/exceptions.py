@@ -8,6 +8,7 @@ def get_adobe_exception(exception):
         json_data = exception.response.json()
         reason = json_data['code']
         content = json_data['message']
+
         if AdobeSignNoMoreSignerException.is_no_more_signer(status_code,
                                                             reason):
             return AdobeSignNoMoreSignerException(content,
@@ -23,6 +24,16 @@ def get_adobe_exception(exception):
             return AdobeSignInvalidUserException(content,
                                                  cause=exception,
                                                  reason=reason)
+
+        if AdobeSignMaxApiRateLimitException.is_too_many_request(
+                status_code, reason
+        ):
+
+            return AdobeSignMaxApiRateLimitException(
+                content,
+                cause=exception,
+                retry_after=json_data['retryAfter']
+            )
 
         message = '{} {} {}'.format(exception, reason, content)
     except Exception:
@@ -66,3 +77,18 @@ class AdobeSignInvalidUserException(AdobeSignException):
     @staticmethod
     def is_invalid_user(status_code, reason):
         return status_code == 401 and 'INVALID_USER' in reason
+
+
+class AdobeSignMaxApiRateLimitException(AdobeSignException):
+
+    def __init__(self, message, cause=None, retry_after=None):
+        super(AdobeSignMaxApiRateLimitException, self).__init__(
+            message,
+            cause,
+            'THROTTLING_TOO_MANY_REQUESTS'
+        )
+        self.retry_after = retry_after
+
+    @staticmethod
+    def is_too_many_request(status_code, reason):
+        return status_code == 429 and 'THROTTLING_TOO_MANY_REQUESTS' in reason
