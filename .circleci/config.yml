@@ -2,58 +2,15 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: python:3.6
+      - image: python:3.8
 
     steps:
       - checkout
-
-      - run:
-          name: install dependencies
-          command: |
-            apt-get update && apt-get install -y python-dev && apt-get clean
-            pip install tox
-
       - run:
           name: run tests
           command: |
-            tox -e flake8 -vv
-            tox -e readme -vv
-
-  test-python27:
-    docker:
-      - image: python:2.7
-
-    steps:
-      - checkout
-
-      - run:
-          name: install dependencies
-          command: |
-            apt-get update && apt-get install -y python-dev && apt-get clean
             pip install tox
-
-      - run:
-          name: run tests
-          command: |
-            tox -e "py27-django111"
-
-  test-python35:
-    docker:
-      - image: python:3.5
-
-    steps:
-      - checkout
-
-      - run:
-          name: install dependencies
-          command: |
-            apt-get update && apt-get install -y python-dev && apt-get clean
-            pip install tox
-
-      - run:
-          name: run tests
-          command: |
-            tox -e "py35-django{111,20,21}"
+            tox -e 'flake8' -vv
 
   test-python36:
     docker:
@@ -61,17 +18,11 @@ jobs:
 
     steps:
       - checkout
-
-      - run:
-          name: install dependencies
-          command: |
-            apt-get update && apt-get install -y python-dev && apt-get clean
-            pip install tox
-
       - run:
           name: run tests
           command: |
-            tox -e "py36-django{111,20,21}"
+            pip install tox
+            tox -e 'py36-django{22}'
 
   test-python37:
     docker:
@@ -79,32 +30,35 @@ jobs:
 
     steps:
       - checkout
-
-      - run:
-          name: install dependencies
-          command: |
-            apt-get update && apt-get install -y python-dev && apt-get clean
-            pip install tox
-
       - run:
           name: run tests
           command: |
-            tox -e "py37-django{20,21}"
+            pip install tox
+            tox -e 'py37-django{22}'
+
+  test-python38:
+    docker:
+      - image: python:3.8
+
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            pip install tox
+            tox -e 'py38-django{22}'
 
 workflows:
   default:
     jobs:
       - lint
-      - test-python27:
-          requires:
-            - lint
-      - test-python35:
-          requires:
-            - lint
       - test-python36:
           requires:
             - lint
       - test-python37:
+          requires:
+            - lint
+      - test-python38:
           requires:
             - lint
   version: 2

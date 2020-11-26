@@ -8,7 +8,7 @@ TOX = tox
 PROJECT = $(shell python -c "import setup; print setup.NAME")
 
 
-.PHONY: help develop clean distclean maintainer-clean test documentation sphinx readme release demo
+.PHONY: help develop clean distclean maintainer-clean test documentation sphinx release demo
 
 
 #: help - Display callable targets.
@@ -20,11 +20,7 @@ help:
 
 #: develop - Install minimal development utilities.
 develop:
-	pip install tox
-	pip install pytest
-	pip install pytest-cov
-	pip install flake8
-	pip install -e . -e ./demo
+	pip install tox pytest pytest-cov flake8 -e . -e ./demo
 
 
 #: demo - Install demo project.
@@ -74,11 +70,6 @@ documentation: sphinx readme
 
 sphinx:
 	$(TOX) -e sphinx
-
-
-#: readme - Build standalone documentation files (README, CONTRIBUTING...).
-readme:
-	$(TOX) -e readme
 
 release:
 	pip install zest.releaser
