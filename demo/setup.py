@@ -15,7 +15,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 VERSION = open(os.path.join(project_root, 'VERSION')).read().strip()
 
 REQUIREMENTS = [
-    'Django>=1.11,<2.1',
+    'Django~=2.2.16',
     'django-anysign>=1.2',
     'requests',
     'requests_oauthlib',
@@ -35,10 +35,10 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
             'Framework :: Django',
             'Framework :: Django :: 1.11',
             'Framework :: Django :: 2.0',
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
         ],
         keywords='peopledoc anysign adobesign',
         author='Peopledoc',
