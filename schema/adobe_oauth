@@ -8,9 +8,9 @@ adobe : "AdobeSign";
 adobe alt client: "Obtain Token" {
 ---: New Token;
 client => adobe: "Get authorization URL (+ redirect_url, + application_id)";
-adobe >> client: "authoritation url";
+adobe >> client: "authorization url";
 
-client => adobe: "Call authoritation_url";
+client => adobe: "Call authorization_url";
 client alt adobe: "! Already logged in" {
 	client => adobe: "Login Process and Consent";
 };
