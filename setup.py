@@ -12,7 +12,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 VERSION = open(os.path.join(here, 'VERSION')).read().strip()
 
 REQUIREMENTS = [
-    'Django~=2.2.16',
+    'Django>=2.2.27,<3.3',
     'django-anysign>=1.2',
     'requests',
     # v1.2.0 introduce OAuthlib 3.0.0 seems to be not compatible with Adobe
@@ -31,6 +31,7 @@ if __name__ == '__main__':  # Do not run setup() when we import this module.
             "Operating System :: POSIX",
             'Framework :: Django',
             'Framework :: Django :: 2.2',
+            'Framework :: Django :: 3.2',
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",

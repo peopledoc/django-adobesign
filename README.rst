@@ -1,3 +1,5 @@
+|Build Status|
+
 ################
 django-adobesign
 ################
@@ -65,3 +67,6 @@ Use `MSCGen`_ in mode **MsGenny** to visiualize the `authentication sequence dia
 .. _`MSCGen`: https://mscgen.js.org/
 
 .. _`authentication sequence diagram`: ./schema/adobe_oauth
+
+.. |Build Status| image:: https://github.com/peopledoc/django-adobesign/actions/workflows/main.yml/badge.svg?branch=master
+    :target: https://github.com/peopledoc/django-adobesign/actions
