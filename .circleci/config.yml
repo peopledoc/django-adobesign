@@ -12,18 +12,6 @@ jobs:
             pip install tox
             tox -e 'flake8' -vv
 
-  test-python36:
-    docker:
-      - image: python:3.6
-
-    steps:
-      - checkout
-      - run:
-          name: run tests
-          command: |
-            pip install tox
-            tox -e 'py36-django{22}'
-
   test-python37:
     docker:
       - image: python:3.7
@@ -34,7 +22,7 @@ jobs:
           name: run tests
           command: |
             pip install tox
-            tox -e 'py37-django{22}'
+            tox -e 'py37-django{22,32}'
 
   test-python38:
     docker:
@@ -46,15 +34,12 @@ jobs:
           name: run tests
           command: |
             pip install tox
-            tox -e 'py38-django{22}'
+            tox -e 'py38-django{22,32}'
 
 workflows:
   default:
     jobs:
       - lint
-      - test-python36:
-          requires:
-            - lint
       - test-python37:
           requires:
             - lint
