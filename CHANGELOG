@@ -4,11 +4,14 @@ Changelog
 This document describes changes between each past release. For information
 about future releases, check `milestones`_ and :doc:`/about/vision`.
 
-
-0.11 (unreleased)
+0.11 (2022-02-04)
 -----------------
 
-- Nothing changed yet.
+- Supported python versions are now 3.7 and 3.8
+- Supported Django versions are now 2.2.27 and 3.2
+- Drop python version 3.6
+- Use github actions
+- Drop circleci
 
 
 0.10 (2021-01-18)
