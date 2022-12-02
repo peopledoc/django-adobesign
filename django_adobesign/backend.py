@@ -65,7 +65,7 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
         return signature
 
     def map_adobe_signer_to_signer(self, signature):
-        signers = {(signer.email, signer.signing_order): signer
+        signers = {(signer.email.lower(), signer.signing_order): signer
                    for signer in signature.signers.all()}
         for adobe_signer in self.get_all_signers(
                 signature.signature_backend_id).get('participantSets', []):

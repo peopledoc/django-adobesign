@@ -170,7 +170,7 @@ def test_get_refuse_comment(mocker, adobe_sign_backend):
 def test_map_adobe_signer_to_signer(mocker, adobe_sign_backend,
                                     minimal_signature):
     # Check signer with same email are good mapped with the order
-    signer1 = Signer(full_name='Poney poney', email='poney@plop.com',
+    signer1 = Signer(full_name='Poney poney', email='Poney@plop.com',
                      signing_order=1)
     signer2 = Signer(full_name='Pouet pouet', email='poney@plop.com',
                      signing_order=2)
