@@ -30,6 +30,8 @@ def test_oauth_get_scopes():
     assert 'agreement_send:account' in scopes
     assert 'agreement_read:account' in scopes
     assert 'agreement_write:account' in scopes
+    assert 'webhook_write:account' in scopes
+    assert 'webhook_read:account' in scopes
 
 
 def test_oauth_create(mocker, adobe_oauth_session):
