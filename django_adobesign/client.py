@@ -32,7 +32,9 @@ class AdobeSignOAuthSession(object):
             'user_login:{}',
             'agreement_send:{}',
             'agreement_read:{}',
-            'agreement_write:{}')]
+            'agreement_write:{}',
+            'webhook_write:{}',
+            'webhook_read:{}')]
 
     def create_token(self, code, application_secret):
         response = self.oauth_session.fetch_token(
