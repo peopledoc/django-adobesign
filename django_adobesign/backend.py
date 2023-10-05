@@ -35,9 +35,10 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
             jsonified_signers.append(signer)
         return jsonified_signers
 
-    def create_signature(self, signature, post_sign_redirect_url=None,
-                         post_sign_redirect_delay=0,
-                         send_mail=True, **extra_data):
+    def create_signature(self, signature, webhook_handler_url,
+                         post_sign_redirect_url=None,
+                         post_sign_redirect_delay=0, send_mail=True,
+                         **extra_data):
         """Register ``signature`` in AdobeSign service, return updated object.
         This method calls ``save()`` on ``signature`` and ``signer``.
 
@@ -62,6 +63,12 @@ class AdobeSignBackend(django_anysign.SignatureBackend):
 
         # Update signers instance with external id
         self.map_adobe_signer_to_signer(signature)
+
+        # Create webhook for the new agreement
+        self.adobesign_client.post_webhooks(
+            agreement_id=signature.signature_backend_id,
+            webhook_handler_url=webhook_handler_url,
+        )
         return signature
 
     def map_adobe_signer_to_signer(self, signature):

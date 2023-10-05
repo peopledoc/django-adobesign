@@ -502,3 +502,29 @@ def test_update_signer_client_or_server_error(
 
     assert expected_json_reply_error['code'] in str(e.value)
     assert expected_json_reply_error['message'] in str(e.value)
+
+
+def test_post_webhooks(mocker, adobe_sign_client, expected_headers):
+    mocked_post = mocker.patch('requests.post')
+    adobe_sign_client.post_webhooks(
+        agreement_id='test-id',
+        webhook_handler_url='https://test.com/handler'
+    )
+
+    mandatory_parameters = mocked_post.call_args[0]
+    assert mandatory_parameters == ('http://test/api/rest/v6/webhooks',)
+
+    kwargs_parameters = mocked_post.call_args[1]
+    assert kwargs_parameters == {
+        'headers': expected_headers,
+        'json': {
+            'name': 'APIv2 Agreement webhook',
+            'scope': 'RESOURCE',
+            'state': 'ACTIVE',
+            'resourceType': 'AGREEMENT',
+            'resourceId': 'test-id',
+            'webhookSubscriptionEvents': ['AGREEMENT_ALL'],
+            'webhookUrlInfo': {'url': 'https://test.com/handler'}
+        },
+        'timeout': 15
+    }

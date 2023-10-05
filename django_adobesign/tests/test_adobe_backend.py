@@ -83,6 +83,9 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
                  'id': 'barid',
                  'status': 'CANCELLED',
                  'order': 1}]})
+    
+    mocked_post_webhooks = mocker.patch.object(
+        AdobeSignClient, 'post_webhooks')
 
     # Signers
     signer1 = Signer(full_name='Poney poney', email='poney@plop.com',
@@ -99,7 +102,8 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
 
     assert minimal_signature.signature_backend_id == ""
 
-    adobe_sign_backend.create_signature(minimal_signature)
+    adobe_sign_backend.create_signature(
+        minimal_signature, 'https://test.com/handler')
 
     minimal_signature.refresh_from_db()
     assert minimal_signature.signature_backend_id == 'test_agreement_id'
@@ -108,6 +112,11 @@ def test_create_signature(mocker, minimal_signature, adobe_sign_backend):
     signer2.refresh_from_db()
     assert signer1.signature_backend_id == "barid"
     assert signer2.signature_backend_id == "fooid"
+
+    mocked_post_webhooks.assert_called_once_with(
+        agreement_id=minimal_signature.signature_backend_id,
+        webhook_handler_url='https://test.com/handler',
+    )
 
 
 def test_get_next_signer_urls(mocker, adobe_sign_backend):

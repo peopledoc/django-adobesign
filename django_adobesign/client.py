@@ -331,3 +331,26 @@ class AdobeSignClient(object):
     def rebuild_with_token(self, access_token):
         return AdobeSignClient(self.root_url, access_token, self.api_user,
                                self.on_behalf_of_user)
+    
+    @handle_adobe_exception
+    def post_webhooks(self, agreement_id, webhook_handler_url):
+        """
+        Create a a new webhook
+        """
+        url = self.build_url('webhooks')
+        data = {
+            "name": "APIv2 Agreement webhook",
+            "scope": "RESOURCE",
+            "state": "ACTIVE",
+            "resourceType": "AGREEMENT",
+            "resourceId": agreement_id,
+            "webhookSubscriptionEvents": ["AGREEMENT_ALL"],
+            "webhookUrlInfo": {"url": webhook_handler_url},
+        }
+        response = requests.post(
+            url,
+            headers=self.get_headers(),
+            json=data, timeout=self.timeout
+        )
+        response.raise_for_status()
+        return response.json()
